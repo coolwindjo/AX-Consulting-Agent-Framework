@@ -3,8 +3,8 @@
 > 고객의 업종·인원·업무 흐름·데이터 민감도·기존 IT 환경을 진단하고, Local·Cloud·Hybrid Agent 운영모델과 적용 수준을 선택하기 위한 사전 분석자료
 
 - 작성일: 2026-08-13
-- 개정: 2026-08-20 운영중 endpoint HOLD 판정보정 v3.21
-- 개정 범위: Portable Skill Runtime 분리와 업무중 queue·index·task-state 변화의 rollout 인과관계 판정
+- 개정: 2026-09-08 TCEU 두 PC 운영 기준 최신화 v3.22
+- 개정 범위: TCEU CnwC 임시 열람·AgwA 실행·CllC 결과 공유와 현장사례 정본 참조 통합
 - 문서 구조 개정: 2026-08-17 CEST
 - 마지막 현장 검증: 2026-08-18 CEST · Mac mini local collector 및 TCEU Cloud 역할·경로 사용자 진술 반영
 - 대상: 업종과 무관하게 대표 포함 10인 이하의 영세·소규모 사업자
