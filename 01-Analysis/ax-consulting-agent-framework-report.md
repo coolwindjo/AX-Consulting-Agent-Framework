@@ -829,28 +829,17 @@ Discovery가 끝나면 최소 다음 다섯 항목을 고객에게 제시한다.
 | 2026-08-19 | TCEU in-place 최적화 교정 | 고정 신규 폴더트리와 개인 역할별 분리로 읽힐 여지 | 기존 Community Sharing·개인 결합 root를 기본 유지하고 OpenClaw dependency가 확인된 부분만 최소 최적화 | 문서 diff 역적용 | documentation complete; Stage 1 audit pending |
 | 2026-08-20 | TCEU portable continuity·Prune | 개인 Context가 단순 인계영역으로 표현되고 Runbook 뒤쪽에 반복 설명 존재 | OpenClaw-like portable core·`Business` 역할명·runtime 제외를 반영하고 TCEU Runbook을 15% 이상 압축 | 문서 diff 역적용 | documentation complete; `EXP-019` pending |
 
-### 15.7 TCEU 구성원 업무 PC + 공용 OpenClaw PC 현장사례 · baseline observed
+### 15.7 TCEU 두 PC 현장사례 · 2026-09-08 운영 기준
 
-TCEU 사례는 구성원들의 업무 PC와 `tceu.manager` Agent 전용 Microsoft 365 계정으로 동작하는 공용 OpenClaw PC를 TCEU 소유의 제한된 문서영역으로 연결하는 별도 기업 현장사례다. OpenClaw PC는 특정 개인의 전용 장비가 아니라 사용자 포함 5명의 구성원이 공동 사용하는 Agent 노드다. 대상 PC를 포함한 TCEU PC가 모두 실제 업무에 사용 중이라는 전제도 사용자 진술로 확인했다. 다른 고객의 시스템·자료·자동화와 연결하지 않는다.
+TCEU는 System Master 업무 PC의 개인 문맥(CnwC), 공용 OpenClaw PC의 실행 workspace(AgwA), Agent 계정 소유 OneDrive의 결과 공유 공간(CllC)을 연결한다. 개인 자료는 필요한 기간에만 Viewer로 공유하고, System Master는 CllC의 KB·결과를 Editor로 확인한다. 기존 조직 SharePoint 원천은 별도로 유지한다.
 
-| 영역 | 확인된 상태 | 권고 역할 |
-|---|---|---|
-| TCEU 구성원 업무 PC | 같은 개인 OneDrive 폴더가 Version·Vault·portable OpenClaw-like Context 세 역할을 수행하며, 한 Node 의존 Skill 아래의 `node_modules` Junction이 반복 OneDrive sync 오류를 일으킨 사실이 endpoint Codex 결과로 보고됨 | 결합 root는 유지하되 portable Skill definition·일반파일 loader만 Cloud에 두고 Node runtime·package cache·연결점은 local로 부분 분리 |
-| 공용 OpenClaw PC | Windows Node+WSL Gateway, 두 Agent·binding 없음·공유 workspace, 대형 cache/output/quarantine 혼재; 5인 공동사용은 user-reported | 조직 전체의 유일한 Agent Workspace for Automation으로 local 실행, 구성원별 session·task 귀속, read-only/writer Lane 분리 |
-| `tceu.manager` | Agent 전용 Microsoft 계정이라는 user-reported 전제 | service identity로만 사용하고 human requester·approver와 분리 |
-| Cloud library for Community Sharing | 조직 전체 1개의 현재 공용폴더를 최대한 활용한다는 user-defined target; OpenClaw 하위경로 의존성은 미확인 | active/reference 경로 보존, human-only 선택 정리, unknown 무변경, gap에만 최소 overlay |
-| Cloud workspace for Version control | 구성원별 개인 OneDrive 결합 root가 Version·Vault·Context 세 역할을 함께 수행 | 별도 역할 root를 만들지 않고 provider history·Vault·LLM 인계를 같은 위치에서 사용 |
-| Skill 저장 | OpenClaw runtime·공용 비-runtime·개인 Skill의 정본 경계와 TCEU System Master=조승현이 user-defined; catalog·discovery·후보절차는 proposed | Agent Workspace / 기존 Community Sharing의 `Shared-Skills` 역할 / 작성자 Context에 한 정본씩 둠; Master는 직접 등록, 다른 구성원은 candidate 제출 후 Master 검증 |
-| 업무 연속성 | 모든 TCEU PC가 실제 업무용이라는 user-reported 전제, 허용 중단시간·업무 회귀기준은 미확인 | audit된 두 PC를 3단계 동시 Gate로 적용하고 기존 업무경로 유지 |
-| 지식 환류 | TCEU Runbook 17장에 System Master가 두 PC의 비식별 Gate 결과와 현재 상태를 갱신 | 검증된 비식별 통찰만 공통문서로 승격 |
+권고 매핑은 `S3 Hybrid Selective Bridge + S4 Dedicated Managed Node`다. 개인 Version·Vault·Context의 같은-root 사용과 장치 로컬 runtime, 공용·개인·실행 Skill의 정본 분리, 정상 저장으로 인계, 단일 작성자, 두 PC 검증과 복귀 원칙을 유지한다. 민감 원문과 이를 재현하는 파생물은 Agent 기억·RAG·로그에 저장하지 않으며, 권한 회수 후에는 원천 위치를 바탕으로 재공유를 요청한다.
 
-- 적용 기준: [TCEU 구성원 업무 PC와 공용 OpenClaw PC 연계 Runbook](https://drive.google.com/file/d/1BewvqzpXnE2ef66GRJ-XS7OlErtKUmRw/view?usp=drive_link)
-- 현장 기록: [TCEU Runbook 17장](https://drive.google.com/file/d/1BewvqzpXnE2ef66GRJ-XS7OlErtKUmRw/view?usp=drive_link)
-- 현재 상태: 로컬 폴더·동기화 snapshot·OpenClaw runtime은 `observed`; 구성원 업무 PC의 Node Skill Junction과 sync 문제는 `observed — endpoint Codex reported`; Portable Definition·Device-Local Runtime 전환은 `proposed`; 5인 공동사용, Agent 전용 계정과 모든 PC의 실제 업무 사용은 `observed — user-reported`; 구성원별 접속방식·identity·session·권한, Microsoft 365 owner·ACL·정본·회사정책과 pilot 결과는 `unknown/proposed`
+현장 상태는 AgwA와 RAG 관련 디렉터리, 로컬 CllC·문서의 존재를 확인한 수준이다. 원격 owner/ACL, Cloud 동기화·상대 PC 열람, runtime workspace 일치, 민감정보 미저장 강제와 기존 잔존자료는 미검증이다. 8월의 HOLD·보안·동기화 관찰을 해결 완료로 간주하지 않는다.
 
-권고 매핑은 문서업무 `S3 Hybrid Selective Bridge`와 공용 Agent 노드 `S4 Dedicated Managed Node`의 혼합형이다. 공용폴더와 개인 결합 workspace를 먼저 보존하며, 역할 구분은 문서·writer 계약으로 해결한다. 물리분리는 실제 문제를 해결할 때만 선택하고 정상 저장·동기화에는 승인이나 수동 publish를 추가하지 않는다.
-
-공용 노드는 `tceu.manager` service identity와 사람의 requester·approver를 구분하고, Telegram topic을 업무 Lane으로만 사용한다. 적용은 `Stage 1 baseline → Stage 2 shadow → Stage 3 canary`의 두 PC 동시 Gate를 따른다. 세부 folder tree, identity schema, 검증 표본과 rollback은 위 TCEU Runbook을 단일 기준으로 사용한다.
+- 운영 기준·현재 상태·기존 아이디어의 적용: [TCEU Runbook](../04-Field-Cases/TCEU/tceu-two-pc-agent-integration-runbook.md)
+- PC별 작업·검증·문서 반영: [LLM 사용 안내서](../04-Field-Cases/TCEU/tceu-runbook-llm-usage-guide.md)
+- 환류 대상: 현장에서 반복 검증된 비민감 원칙만 공통화한다. 세부 상태표·절차는 위 정본에만 유지한다.
 
 ## 16. 적용 지식 환류 체계
 

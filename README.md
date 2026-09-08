@@ -22,9 +22,9 @@
 | 고객 PC에서 안전하게 실행 | [고객 적용 Prompt Set & Runbook](./02-Implementation/ax-customer-llm-prompt-runbook.md) | 선택안을 LLM이 DRY-RUN·APPLY·검증·복구하도록 안내합니다. |
 | CoolFam 링크를 LLM에 입력 | [CoolFam Runbook LLM 사용 안내서](./04-Field-Cases/CoolFam/coolfam-runbook-llm-usage-guide.md) | CoolBot PC·개인 PC의 Codex Prompt, 통합판정, Runbook 반영 순서를 안내합니다. |
 | CoolFam CoolBot와 개인 PC 연계 | [CoolFam CoolBot와 조승현 개인 PC 연속성 Runbook](./04-Field-Cases/CoolFam/coolfam-coolbot-personal-pc-continuity-runbook.md) | `coolfam830` 소유 Bridge 1개를 `coolwind` 계정에 공유하고 개인 Direct Workspace의 Shortcut으로 같은 portable Context·Skill·task를 사용하도록 설계합니다. |
-| TCEU 링크를 LLM에 입력 | [TCEU Runbook LLM 사용 안내서](./04-Field-Cases/TCEU/tceu-runbook-llm-usage-guide.md) | 어느 PC의 Codex에 어떤 Prompt를 넣고 두 결과를 어떻게 합칠지 안내합니다. |
-| TCEU 공용 Agent 노드 적용 | [TCEU 구성원 업무 PC와 공용 OpenClaw PC 연계 Runbook](./04-Field-Cases/TCEU/tceu-two-pc-agent-integration-runbook.md) | 기존 Community Sharing, 구성원별 결합 workspace와 공용 Agent Workspace를 보존하며 업무용 두 PC를 3단계로 연계합니다. |
-| TCEU 적용상태 확인 | [TCEU Runbook 17장](./04-Field-Cases/TCEU/tceu-two-pc-agent-integration-runbook.md) | System Master가 현재 상태와 Gate 결과를 Runbook 안에 간결하게 유지합니다. |
+| TCEU 작업 실행 | [TCEU Runbook LLM 사용 안내서](./04-Field-Cases/TCEU/tceu-runbook-llm-usage-guide.md) | PC별 연결 확인·일상 작업·재공유 요청·Git 갱신을 안내합니다. |
+| TCEU 공용 Agent 노드 적용 | [TCEU 구성원 업무 PC와 공용 OpenClaw PC 연계 Runbook](./04-Field-Cases/TCEU/tceu-two-pc-agent-integration-runbook.md) | CnwC 임시 열람, AgwA 실행, Agent 소유 CllC의 KB·결과 공유를 연결합니다. |
+| TCEU 적용상태 확인 | [TCEU Runbook 현재 상태](./04-Field-Cases/TCEU/tceu-two-pc-agent-integration-runbook.md) | 관찰·사용자 설명·미검증을 구분하고 실제 연결 검증 결과를 유지합니다. |
 | 그림의 별도 내보내기 파일 | `03-Visuals/` | 향후 PNG·SVG·PDF로 내보낸 도식을 보관합니다. 현재 도식 원본은 두 Markdown 문서의 Mermaid 블록입니다. |
 | 폐기하지 않을 이전 판 | `90-Archive/` | 큰 구조 변경 전의 기준본만 날짜와 함께 보관합니다. |
 
@@ -39,20 +39,11 @@ flowchart LR
 
 CoolFam 사례와 TCEU 사례는 서로 독립된 field case입니다. CoolFam Runbook은 `coolfam830` Cloud library for Community Sharing의 `CoolFam-Agent-Bridge/` 원본을 `coolwind` 개인 Cloud workspace for Version control에 `Agent` Shortcut으로 연결합니다. Agent Workspace와 개인 Drive root 자체는 Sync하지 않고 Bridge의 portable Context·Skill·task·output만 동기화하며, Bridge 밖 background crawl은 금지합니다.
 
-TCEU 사례는 `System Master Prompt A·B → Prompt C 통합판정 → Prompt D Runbook 반영 → 다음 Gate → 검증된 Insight → 공통문서 개선` 순서로 사용합니다. 두 PC가 모두 합격하고 Runbook 기록이 완료되어야 다음 Gate로 진행하며 기존 업무경로는 Stage 3 종료까지 유지합니다. TCEU와 다른 고객의 자료·자동화·Cloud 영역은 연결하지 않습니다.
+TCEU 사례는 **CnwC 임시 열람 → AgwA 작업 → CllC 결과 공유**를 기본 흐름으로 사용합니다. 개인 민감 원문과 이를 재현하는 파생물은 Agent 메모리·RAG·로그에 보관하지 않고, 접근이 회수되면 필요한 폴더만 다시 공유받습니다. 정상적인 비민감 결과는 저장·동기화로 인계합니다.
 
-세 Stage 안에서는 `Stage 1 무변경 기준선 → Stage 2 in-place 최적화·portable core/Skill·shadow cycle → Stage 3 workflow canary·System Master 공용 Skill canary`를 서로 다른 변경창으로 진행합니다. 최종 적용 후 두 PC의 다섯 기능 위치와 folder tree는 TCEU Runbook 2.3~2.4장을 먼저 봅니다.
+운영 기준은 Git의 [TCEU Runbook](./04-Field-Cases/TCEU/tceu-two-pc-agent-integration-runbook.md), 실행 방법은 [사용 안내서](./04-Field-Cases/TCEU/tceu-runbook-llm-usage-guide.md)에 유지합니다. CllC에는 검증된 열람 사본과 공유 가능한 업무 결과를 두며, 실제 계정·개인 공유 링크·기기 경로는 공개 Git에 기록하지 않습니다.
 
-TCEU의 Telegram 전담 Agent·Grok-inspired 옵션·Codex·OneDrive·SharePoint·OpenClaw 운영을 적용하려면 다음 순서로 읽습니다.
-
-1. TCEU LLM 사용 안내서: Drive 링크·PC별 Codex Prompt·통합판정
-2. TCEU Runbook 2.3~2.4장: 최종 다섯 기능 위치와 구성원별 결합 workspace
-3. 8장: 업무용 두 PC의 3단계 적용, 내부 Gate, 정상·오적용 검증과 rollback
-4. 4.1장: 개인·공용·OpenClaw runtime Skill과 System Master 운영
-5. 13장: Telegram의 기존 Agent 정의를 Specialist Lane으로 참조하는 방법
-6. 14장: Grok Bot에서 차용하는 선택 옵션
-7. 15~16장: PC·Cloud·OpenClaw 배치와 endpoint별 운영계약
-8. Runbook 17장: System Master가 갱신하는 현재 적용상태와 Gate 이력
+기존 아이디어 중 개인 3역할의 같은-root 사용, portable core, Skill 3 Scope, single writer, 두 PC 검증·복귀, 전문 Agent의 권한 분리, 검증된 교훈 환류를 유지했습니다. 현재 상태 확인 → 비민감 시험 → 제한 실사용 순서로 필요한 기능만 검증하며, 문서 갱신을 시스템 적용 완료로 취급하지 않습니다.
 
 ## 기준본과 로컬 사본
 
