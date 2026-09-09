@@ -3,10 +3,10 @@ aliases:
   - CoolFam CoolBot 개인 PC 연계 Runbook
 tags: [coolfam, openclaw, google-drive, field-case]
 type: field-runbook
-status: shadow-verified-final-cutover-pending
+status: operational-go
 created: 2026-08-20
-last_verified: 2026-09-07
-revision: final quiesced snapshot applied to successor shadow; publish and scheduler cutover pending
+last_verified: 2026-09-10
+revision: operational services preserved; recurring backup deferred by user; legacy attachment cleanup inventory pending
 ---
 
 # CoolFam 운영 Runbook
@@ -36,7 +36,7 @@ CoolBot이 자동화를 실행하고 MacBook은 결과물을 사용한다. 개�
 | CnwC 공유 | 개인 계정 소유, CoolBot 계정에 임시 Viewer | user-reported; 현재 링크의 폴더·목록 접근만 observed, 전체 ACL 미검증 |
 | MacBook 이메일 build | DIRECT_MAILBOX·IMAPS, 매일 06:00 Europe/Berlin; 최종 snapshot 후 scheduler 재개 예정, wrapper 경로 drift는 cutover 시 교정 필요 | user-supplied E0 및 후속 결과; 이 task에서 원격 상태를 추정하지 않음 |
 | CoolBot 이메일 cron | 실제 scheduler·프로세스 점검에서 해당 build 관찰 0; 실제 활성 16건, manifest 14건 중 활성 13건 | user-supplied A; 불일치는 아래 별도 분류 |
-| 새 결과물 공유영역 | CoolBot-Shared 미생성; 기존 참조 있는 재사용 후보 1개. 부모 ACL은 소유자만, 개인 Editor 없음 | user-supplied A; 후보 writer·최종 대상 ACL 미검증 |
+| 일반 결과물 공유영역 | 기존 `CoolFamDrive/OpenClaw_Output` 사용 중; CoolBot 소유·단일 writer, 개인 역할 계정 Editor, 표시된 추가·공개 접근자 없음 | observed · 2026-09-10; 양쪽 materialization·동일 Cloud item·MacBook 직접 열람/검색 PASS |
 | 이메일 읽기·보관 권한 | 두 Naver 계정 읽기와 AgwA 밖 보호된 로컬 KB 상시 보관 허용 | user-confirmed · 2026-09-06; 구성 적용은 별도 |
 | MacBook 이용 방식 | KB 문서를 직접 열고 검색 | user-confirmed · 2026-09-06 |
 
@@ -53,13 +53,14 @@ CoolBot이 자동화를 실행하고 MacBook은 결과물을 사용한다. 개�
 | 개인 계정 소유 이메일 KB 출력 폴더 | Sensitive 열람 문서 정본 | 개인 소유자, CoolBot Editor; 일반 Artifacts와 별도 위치 |
 | CoolBot 보호된 로컬 저장소 | 이메일 실행 데이터 | credential 참조, DB·index·cache·runtime; AgwA·Drive 밖 |
 
-공유 결과물의 제안 경로:
+일반 결과물의 확정 논리 경로:
 
 ```text
-/Users/coolbot_macmini/Library/CloudStorage/GoogleDrive-coolfam830@gmail.com/내 드라이브/CoolFamDrive/CoolBot-Shared/
-  README.md       # MacBook용 시작점, 결과물 위치·마지막 성공 상태
-  Artifacts/      # 일반 완성 결과물
+CoolFamDrive/OpenClaw_Output/
+  <project-or-deliverable>/   # 일반 완성 결과물
 ```
+
+기존 구조가 owner·writer·Editor 경계를 충족하므로 별도 `CoolBot-Shared`는 만들지 않는다. CoolBot은 위 정본에 쓰고, MacBook은 같은 공유 폴더의 materialized 진입점으로 읽는다. 개인 소유 이메일 KB 폴더는 이 경로의 대상·하위 구조가 아니며 일반 Artifacts에서 제외한다.
 
 이메일 KB 출력은 개인 계정 소유 Drive의 지정 전용 폴더를 사용한다. CoolBot 계정은 Editor로 참여한다. 폴더·개별 파일 소유권과 두 계정 ACL 및 MacBook 합성 게시·열람은 검증됐으며, 기존 CoolBot 소유 일반 출력 폴더의 ACL을 이 대상 증거로 대신하지 않는다. 실제 ID·링크·로컬 경로는 공용 문서에 기록하지 않는다.
 
@@ -68,7 +69,7 @@ CoolBot이 자동화를 실행하고 MacBook은 결과물을 사용한다. 개�
 ```text
 개인 Drive ──현재 요청 + 임시 Viewer──▶ CoolBot의 제한된 일회 처리
 두 Naver 계정 ──별도 상시 읽기 권한──▶ CoolBot 로컬 build·KB
-CoolBot ──일반 결과만──▶ 기존 재사용 후보 또는 CoolBot-Shared ──▶ MacBook
+CoolBot ──일반 결과만──▶ CoolFamDrive/OpenClaw_Output ──▶ MacBook materialized 공유 폴더
 CoolBot 로컬 이메일 KB ──완성된 열람 문서──▶ 개인 소유 Email-RAG-KB (CoolBot Editor) ──▶ MacBook
 ```
 
@@ -81,7 +82,7 @@ CoolBot 로컬 이메일 KB ──완성된 열람 문서──▶ 개인 소유
 
 ### 상시 결과물 공유
 
-`CoolBot-Shared`는 CoolBot 계정이 소유하고 개인 계정을 Editor로 초대하는 목표다. 생성 전에 기존 동일 목적 폴더·참조와 부모 폴더의 상속 권한을 확인한다. 기존 사용 중 경로가 있으면 재사용을 우선하며 무단 rename하지 않는다.
+일반 결과물 정본은 기존 `CoolFamDrive/OpenClaw_Output`를 재사용한다. CoolBot 소유·단일 writer와 개인 역할 계정 Editor가 확인됐고, 표시된 추가·공개 접근자는 없다. 별도 `CoolBot-Shared` 생성·rename·파일 이동은 하지 않는다. MacBook에서는 동일 Cloud item의 materialized 공유 폴더를 단일 진입점으로 사용하며, endpoint 확인 전 Shortcut을 새로 만들지 않는다.
 
 일반 결과물과 이메일 KB 문서를 구분한다. 기존 후보의 writer·내용 범주·상속 권한을 점검한 뒤 필요한 폴더만 공유하며, 부모 전체를 편의상 공유하지 않는다. 이메일 영역은 개인 소유자와 CoolBot Editor 두 계정만 접근해야 한다. 폴더 소유권과 CoolBot이 생성한 개별 파일의 실제 소유권은 별도로 확인하며, 필요하면 개인 계정 소유 파일을 먼저 만들거나 소유권 이전이 지원되는지 확인한다. 폴더 소유만으로 모든 하위 파일 소유권을 단정하지 않는다. 부모의 상속 권한으로 다른 사용자가 접근할 수 있다면 하위 폴더 이름만으로 격리됐다고 판단하지 말고, 별도 제한 위치를 확정한다. 일반 결과물 공유 확대가 이메일 권한 확대로 이어져서는 안 된다.
 
@@ -216,28 +217,30 @@ msgvault 0.18.0 기본 흐름은 IMAP 전체 MIME을 읽고 `message_raw`와 att
 | 2026-09-07 | Option 2 snapshot 재시도 | `READY_FOR_COOLBOT_TRANSFER`. 새 generation `PREP-20260907T144624+0200`, 기존 검증 repository 재사용. pause·drain·전체 archive/cursor/attachment snapshot·SQLite/WAL/cursor·attachment hash 검증 PASS. 총 12,628건(+11)은 source별 +8/+3으로 마지막 성공 sync와 일치. 원본 57 pack을 보존했고 검증 복원본은 무손실 23 pack 재배치. credential·로그·cache·analytics·vector DB·workspace 제외. manifest와 약 1.88 GiB owner-only transfer bundle 재열람·SHA-256 PASS. 원본 무변경, MacBook scheduler PAUSED, rollback ACTIVE 정의 READY |
 | 2026-09-07 | CoolBot 전체 shadow 복원·재색인 | `FULL_SHADOW_RESTORE_FTS_VECTOR_PASS`. transfer 외곽 SHA-256과 내부 manifest 60/60 hash 일치. 복원 archive 12,628건, source 5,572/7,056, cursor 2·high-water 33, attachment reference 3,065·object 2,039·missing/orphan 0. FTS 12,628/12,628·missing/orphan 0. AFM 0.9.14 loopback 합성 검증 PASS; sqlite-vec active generation은 embedded 12,614·blank 14·missing/failed 0, FTS/vector/hybrid 검색 경로 PASS. 전체 vector 11분 5초. bundle·repository·shadow·FTS/vector 보존, 실제 메일 sync·Drive 게시·CoolBot scheduler 변경 0건. MacBook scheduler 재개 후 생긴 변경분은 cutover 전 새 quiesced snapshot으로 반영 필요 |
 | 2026-09-07 | F1 최종 snapshot CoolBot 적용 | `FINAL_SUCCESSOR_SHADOW_PASS`. generation `F1-20260907T204553+0200`의 FULL_FALLBACK bundle 외곽 SHA-256·TAR 안전성·내부 repository 63/63 hash·snapshot 2개 full verify PASS. 최신 snapshot을 기준 shadow를 덮어쓰지 않고 successor에 복원. archive 12,628건, source 5,572/7,056, cursor 2·high-water 33, attachment reference 3,065·object 2,039, missing/broken/orphan·duplicate 0. 기준점 대비 cursor·high-water 변경 0. FTS 12,628/12,628·missing/orphan 0으로 재생성 생략. 검증 vector DB를 successor에 SQLite backup하고 backstop scan 0건; active embedded 12,614·blank 14·missing/failed 0, FTS/vector/hybrid 검색 완전성 PASS. 검증용 daemon·AFM 정상 종료. 메일 sync·Drive 게시·CoolBot scheduler 변경 0건; MacBook scheduler는 최종 전환까지 PAUSED 유지 필요 |
+| 2026-09-09 | 2026-09-08 06:00 첫 운영 실행 검증 | `HOLD_WITH_COOLBOT_PAUSED`. 두 source sync 완료 후 index가 실행됐고 신규 30·변경 0·중복 0·실패 0, 전체 12,658건과 FTS 12,658건이 일치했다. vector 증분 30건 성공·실패 0, 전체 mutex·동일 generation 중복 차단·문서 2·manifest 1·complete marker 1의 로컬 게시 hash 검증 PASS. 신규 30건에 attachment event가 없어 중요 mailbox 첨부 분기의 이번 실행 실증은 `NOT_EXERCISED`다. 보호된 실행 로그에서 주소 형식 문자열이 검출되어 log safety FAIL이고 MacBook 최신 generation materialization·열람·검색·freshness는 `NOT_VERIFIED`. 새 generation은 사용 중지하고 마지막 정상 generation을 유지했다. CoolBot 실제 scheduler와 manifest를 함께 PAUSED로 변경했으며 MacBook 기존 scheduler ACTIVE 복원 필요 |
+| 2026-09-09 | 첫 운영 로그 안전성 수정 | `FIX_VERIFIED_RETEST_PENDING`. 검출값은 오탐이나 서비스 주소가 아니라 두 source의 실제 계정 식별자였고 IMAP 안내·full-sync 시작 출력에서 총 4회 발생했다. 성공·오류·재시도 경로를 안정적인 불투명 source 참조와 최종 주소 비식별화로 수정했다. 합성 선택적 첨부 경로에서 본문·주소·첨부 payload·첨부명 canary 비노출 PASS, 관련 sync 회귀 PASS. 최초 수정 binary가 운영 build tag 없이 만들어진 것을 PAUSED 상태에서 발견해 사용하지 않고, 기존 PASS 환경과 같은 CGO+FTS5+sqlite-vec 조건으로 재빌드했다. 실제 binary-source 일치·FTS smoke·FTS/vector 관련 전체 패키지 PASS. 시스템 Python 3.9 선택으로 실패했던 문서 스크린샷 시험도 기존 PASS와 같은 Python 3.14 격리 PATH에서 PASS하여 검증 환경 전체 회귀 PASS. 기존 binary·로그·신규 30건·마지막 정상 generation 보존, CoolBot scheduler PAUSED, 운영 재시험 미실행 |
+| 2026-09-09 | 로그 수정 후 운영 재시험 | `PENDING_MACBOOK_RETEST_CHECK`. MacBook 기존 scheduler PAUSED·production daemon 정상 drain 확인 뒤 CoolBot 자체 cursor로 두 source 증분 sync 완료. 신규 45·변경 0·중복 0·실패 0, 전체 archive·FTS 12,703건 일치, vector 증분 45/45 성공·실패 0. 전체 mutex·중복 generation 차단·문서 2·manifest 1·complete marker 1·CoolBot Drive materialization hash PASS. 수정 로그에서 주소·메일 헤더·첨부명 패턴 0. 신규 첨부 event가 없어 선택적 첨부 분기는 `NOT_EXERCISED`. 자동 기동 daemon은 공식 종료했고 runner도 후속 실행에서 자동 종료하도록 보강. CoolBot scheduler PAUSED 유지, MacBook source-key 기준·materialization·열람·검색·freshness 검증 대기 |
+| 2026-09-09 | 운영 재시험 최종 전환 | `OPERATIONAL_GO`. MacBook에서 문서 2·manifest 1·complete marker 1의 materialization·SHA-256·실제 열람·canary 검색·freshness PASS. source별 MacBook/게시 key 집합은 5,603/5,603 및 7,100/7,100으로 공통 전건, 양쪽 전용 0, 내부 중복 0. 차이 없음. MacBook scheduler·daemon·writer·lock은 PAUSED/0 유지. 검증 후 기존 CoolBot scheduler 한 건만 ACTIVE로 전환하고 실제 scheduler와 manifest를 함께 일치시킴. 실행시각 06:00 Europe/Berlin, CoolBot 단일 writer 확정 |
+| 2026-09-09 | 일반 Artifacts 정본 확인 | `GENERAL_ARTIFACTS_ROOT_CONFIRMED`. 기존 `CoolFamDrive/OpenClaw_Output`가 CoolBot 소유·writer이고 개인 역할 계정 Editor임을 확인. 기존 결과물과 로컬 materialization·운영 참조가 있어 재사용하며 새 `CoolBot-Shared`는 만들지 않음. 개인 소유 이메일 KB는 별도 경계로 제외. MacBook의 동일 Cloud item·직접 열람/검색 최종 확인만 대기. 파일·ACL·Shortcut 변경 0건 |
+| 2026-09-10 | 일반 Artifacts MacBook 연결 | `GENERAL_ARTIFACTS_ACCESS_PASS`. MacBook에서 기존 정본의 materialization·provider metadata 동일 Cloud item·비민감 결과물 직접 열람과 정확 문자열 검색·Editor 접근 PASS. 단일 진입점은 materialized `OpenClaw_Output` 폴더로 확정. 변경 0건; 개인 소유 이메일 KB는 대상에서 제외 |
+| 2026-09-10 | 정기 backup·보존정책 결정 | `DEFERRED_BY_USER`. CoolBot 운영 데이터와 검증된 이관·복구 사본은 유지하되 정기 snapshot·자동 전송·세대 회전 구축은 이번 범위에서 제외하며 후속 작업의 선행조건으로 요구하지 않음. 기존 bundle·repository·shadow·복구 사본 삭제 승인 없음. 외장하드·Drive 원본 backup·추가 파일 암호화는 사용하지 않고 CoolBot ACTIVE·MacBook scheduler PAUSED 유지 |
+| 2026-09-10 | 기존 비중요 첨부 정리 inventory | `READ_ONLY_ESTIMATE`. 두 source의 exact 사용자 생성 중요 mailbox가 고유하게 매칭됐고 현재 DB membership 기준 중요 1,799·비중요 10,904·분류 불명 0. attachment object는 중요 전용 767, 비중요 전용 1,162, 양쪽 공유 110. 비중요 전용 pack payload 약 508.2 MB와 비중요 attachment 메시지의 압축 MIME 약 659.5 MB가 재작성·DB 회수의 최대 후보이며, 합계 약 1.09 GiB는 구현 전 추정치다. 공유 object·중요 자료·기존 복구 사본은 보존. 서버 원문 존재 여부 미확인. 삭제·MIME 변환·pack 재작성·DB 축소 0건, scheduler 변경 0건 |
 | 2026-09-06 | PRUNE APPLY · Runbook + LLM 안내서 | 사용자 최신 목표와 로컬/링크 메타데이터 확인 반영. 범용 Bridge·샘플 Gate·반복 승인문을 제거하고 결과물 공유 + 이메일 이관으로 재구성. 시스템 변경 없음 |
 
 현재 상태:
-- 문서: `DESIGN_UPDATED`
-- 결과물 연결: 지정 이메일 출력의 합성 문서 경로 `SYNTHETIC_PUBLISH_PASS`; 일반 결과물 연결은 별도 범위
-- 이메일 shadow 복원·재색인: `FINAL_SUCCESSOR_SHADOW_PASS`; production cutover는 `PENDING_PUBLISH_AND_SCHEDULER`
+- 문서: `OPERATIONAL_GO_RECORDED`; 이전 `HOLD`와 rollback 기록은 적용 이력에 보존
+- 일반 결과물 연결: `GENERAL_ARTIFACTS_ACCESS_PASS`. 기존 `CoolFamDrive/OpenClaw_Output`가 CoolBot 소유·writer, 개인 역할 계정 Editor이며 양쪽 materialization·동일 Cloud item·MacBook 열람/검색 확인 완료. 단일 사용자 진입점 확정
+- 이메일 shadow 복원·재색인 및 운영 전환: `OPERATIONAL_GO`; log-safe production generation 양쪽 endpoint 검증 PASS
 - 두 계정 상시 읽기·보호된 로컬 KB: `DESIGN_AUTHORIZED`
-- 선택적 첨부 보존: `NAVER-B_LIMITED_PASS`; NAVER-A 첨부 보충 `NOT_VERIFIED_SKIPPED_BY_USER`이며 선행조건 아님. 운영 적용 `PENDING`
-- 이메일 Drive 문서: `AUTHORIZED_FOR_KB_DOCUMENTS`; 폴더는 개인 소유·CoolBot Editor, CoolBot 생성 개별 파일은 CoolBot 소유·개인 Editor. 합성 게시 검증 PASS, 실제 KB 게시·운영은 `NOT_VERIFIED`
-- 별도 파일/backup 암호화: `NOT_REQUESTED_BY_USER`; 독립 복구 위치·보존은 미확정
-- 통합 baseline: `F1-20260907T204553+0200` final successor shadow VERIFIED; MacBook scheduler `PAUSED`; 기존 MacBook ACTIVE 정의 rollback `READY`
-- A·E0 모두 사용자 제공 결과로 수집 완료. CoolBot A의 ‘E0 없음’은 해소됐으며 재실행 불필요. 다음은 endpoint의 정확한 로컬 참조로 최소 변경계획을 완성하는 작업이다.
+- 선택적 첨부 보존: `NAVER-B_LIMITED_PASS`; NAVER-A 첨부 보충 `NOT_VERIFIED_SKIPPED_BY_USER`이며 선행조건 아님. 이번 운영 신규분 분기는 `NOT_EXERCISED`
+- 이메일 Drive 문서: `OPERATIONAL_GO`; 개인 소유 폴더와 CoolBot 생성 개별 파일의 소유권·권한을 구분해 검증했고, 최신 운영 generation의 양쪽 materialization·hash·열람·검색·freshness PASS
+- 정기 backup·보존정책: `DEFERRED_BY_USER`; 자동 snapshot·직접 전송·세대 회전은 현재 구축하지 않고 후속 작업의 선행조건으로 요구하지 않음. 검증된 이관 bundle·repository·shadow·복구 사본은 삭제 승인 전까지 보존
+- 통합 baseline: 운영 generation 12,703건 양쪽 source-key 전건 일치; CoolBot scheduler `ACTIVE`, MacBook scheduler `PAUSED`, 기존 MacBook ID rollback `READY`
+- A·E0 모두 사용자 제공 결과로 수집 완료. CoolBot A의 ‘E0 없음’은 해소됐으며 재실행 불필요.
 
 통합 미완료 항목:
 
-| 범위 | 남은 확인·해소 기준 |
-|---|---|
-| 이메일 실행 | 최종 KB 문서 필드·기간·보존정책 확정, 게시 generation 생성·MacBook materialization 검증, canonical runner drift 교정, 게시 완료까지 포괄하는 전체 mutex |
-| 복구 | 최종 snapshot·cursor·attachment·scheduler manifest를 기존 rollback 정의와 연결하고, cutover 실패 시 30분 내 MacBook ACTIVE 복원 실증 |
-| CoolBot scheduler | 실제에만 3건·manifest에만 1건의 원인/소유자를 비식별 대조. 이번 이관 관련 충돌을 판정하고 무관한 작업은 보존; 전체 manifest 덮어쓰기 금지 |
-| 일반 결과물 | 기존 후보 writer·대상 ACL·안정적 MacBook 진입점·합성 검색. 미생성 대상 ACL은 연결 후 검사할 항목이지 계획 작성 blocker가 아님 |
-| MacBook 이메일 접근 | 지정 대상의 폴더/개별 파일 소유권·두 계정 ACL·완전한 합성 세대 게시·materialization·실제 열람/검색 검증 PASS. 실제 KB 문서 필드·보존과 운영 generation 검증은 별도 필요 |
+- 일반 Artifacts의 MacBook 접근 연결 범위에는 남은 항목이 없다. 이메일 운영의 별도 관찰·복구 정책은 기존 운영 기록과 해당 rollout 절차를 따른다.
 
 두 결과의 endpoint 변경 0건은 사용자 보고로 기록한다. 기존 MacBook Microsoft source 비활성, 외부 embedding/본문 전송 증거 없음은 보고된 관찰 범위이며, 보존기간·로그 안전성을 대신 증명하지 않는다.
 
