@@ -43,6 +43,8 @@ TCEU 사례는 **CnwC 임시 열람 → AgwA 작업 → CllC 결과 공유**를 
 
 운영 기준은 Git의 [TCEU Runbook](./04-Field-Cases/TCEU/tceu-two-pc-agent-integration-runbook.md), 실행 방법은 [사용 안내서](./04-Field-Cases/TCEU/tceu-runbook-llm-usage-guide.md)에 유지합니다. CllC에는 검증된 열람 사본과 공유 가능한 업무 결과를 두며, 실제 계정·개인 공유 링크·기기 경로는 공개 Git에 기록하지 않습니다.
 
+공용 Skill은 System Master가 CnwC에서 연결된 CllC 정본을 편집하면 자동 검증·배포를 거쳐 AgwA의 다음 요청에서 사용하도록 설계했습니다. 수동 복사·매번 승인 없이 쓰는 방법과 아직 미구현인 최초 연결 항목은 TCEU Runbook 5장에 있습니다.
+
 기존 아이디어 중 개인 3역할의 같은-root 사용, portable core, Skill 3 Scope, single writer, 두 PC 검증·복귀, 전문 Agent의 권한 분리, 검증된 교훈 환류를 유지했습니다. 현재 상태 확인 → 비민감 시험 → 제한 실사용 순서로 필요한 기능만 검증하며, 문서 갱신을 시스템 적용 완료로 취급하지 않습니다.
 
 ## 기준본과 로컬 사본

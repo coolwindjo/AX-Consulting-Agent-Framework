@@ -2,9 +2,9 @@
 title: TCEU 두 PC 운영 Runbook
 type: field-case-runbook
 status: policy-defined-implementation-unverified
-version: 2.0
+version: 2.1
 created: 2026-08-15
-last_reviewed: 2026-09-08
+last_reviewed: 2026-09-09
 ---
 
 # TCEU 두 PC 운영 Runbook
@@ -33,6 +33,7 @@ flowchart LR
     C -->|"작업 범위·기간 한정 Viewer"| A["AgwA · TCEU Manager"]
     A -->|"보관·공유 가능한 KB와 결과"| L["CllC · 결과 공유"]
     M <-->|"열람·편집"| L
+    L -->|"공용 Skill 자동 전달·검증"| A
     G["Git · 운영문서 정본"] -->|"검증된 열람 사본"| L
 ```
 
@@ -82,21 +83,63 @@ KB는 먼저 사람이 읽을 수 있는 Markdown으로 제공한다. 원문·�
 
 외부 발송·권한 확대·원천 덮어쓰기·삭제·계약·결제는 해당 행동의 명시적 권한이 필요하다. 기존 사용자 지시로 허용된 범위는 반복 승인받지 않는다. Telegram에는 요청·상태·결과 참조만 전달하며 민감 원문이나 전체 Runbook을 상시 투입하지 않는다.
 
-## 5. Skill과 전문 Agent
+## 5. 공용 Skill: 저장하면 AgwA에서 사용
 
-| Scope | 정본 | 관리 |
+### 5.1 정본 하나, 평소에는 저장만
+
+**공용 Skill은 처음부터 `CllC/Shared-Skills/<name>/`에 만들고 System Master가 직접 편집한다.** CnwC의 작업 안내·장치별 loader에는 이 위치를 등록해 “공용 Skill을 만들어줘/수정해줘”가 같은 정본에 저장되도록 한다. CnwC에 별도 공용 본문을 두고 반복 복사하지 않는다. 탐색용 링크와 장치 로컬 adapter를 사용하며 Cloud 안에 Junction·symlink를 만들지 않는다.
+
+| Scope | 정본 | 반영 방식 |
 |---|---|---|
-| 개인 portable Skill | 작성자의 CnwC | 작성자 관리, 자동 공유 금지 |
-| 공용 비-runtime Skill | CllC의 적합한 위치 | System Master가 직접 등록·수정·폐기; 다른 구성원은 비민감 후보 제출 |
-| OpenClaw runtime Skill | AgwA의 기존 skills | 실행 환경에서 시험 후 적용; 공용 Skill 자동 설치 금지 |
+| 개인 Skill | 작성자의 CnwC | 개인으로 유지. “공용으로 전환”한 항목만 민감 참조를 제거해 CllC 정본으로 전환 |
+| 공용 portable Skill | CllC/Shared-Skills | System Master 저장이 배포 의도. 사전 설정한 범위에서는 자동 검증·반영, 매번 복사·승인·Git push 불필요 |
+| AgwA 실행 배포본 | WSL 로컬의 전용 shared-skill 배포 영역 | CllC에서 단방향 자동 생성. 편집 금지; 기존 AgwA 전용 skills와 구분 |
 
-필요한 catalog에는 이름·목적·정본 상대경로·상태·검증 버전/시점만 둔다. 동명 Skill은 Scope를 확인하며 임의 선택하지 않는다. 폐기는 retired 표시와 필요한 보존으로 처리하고, 복귀할 때 Skill과 catalog를 같은 버전으로 되돌린다. 부재 시 명시된 Acting Master 한 명이 맡으며 기술 관리 역할이 업무 승인권을 대신하지 않는다.
+기존의 “공용 Skill 자동 설치 금지”는 위 공용 정본의 자동 반영을 막지 않는다. 임의의 개인·외부 Skill 수집, 새 패키지 설치, 권한 확대는 별도다. 개인 Skill을 공용으로 전환할 때 System Master PC에서 같은 Skill이 이중 발견되지 않도록 이전 loader를 교체한다.
+
+공용 Skill은 지속 보관·공유하도록 명시한 비민감 자산이다. CnwC 임시 공유 회수와 독립적으로 계속 사용한다. 개인 원문·공유 토큰·개인 절대경로를 Skill에 넣지 않으며, 업무 중 개인 자료가 필요하면 실행 시 별도로 재공유받는다.
+
+### 5.2 자동 전달·로딩 방법
+
+```text
+System Master: CnwC에서 공용 Skill 작성 요청
+  → CllC/Shared-Skills 정본 저장
+  → 자동 패키징 → OneDrive 전달
+  → 공용 PC의 WSL 배포 bridge가 완전한 변경본 확인
+  → 검증된 로컬 배포본 활성화 → OpenClaw 다음 요청에서 사용
+```
+
+다음은 **구현할 운영 계약**이다. OpenClaw의 내장 기능과 별도 제작할 자동 전달 bridge를 구분한다.
+
+1. **최초 한 번 설정:** System Master의 Shared-Skills 편집 위치, 공용 PC의 해당 OneDrive 동기화 위치, WSL 배포 영역, 대상 Agent·기존 실행 권한을 연결한다. 자동화는 이 공용 영역만 읽는다. 필요한 비민감 공용 파일만 로컬 가용하게 설정하며 CnwC 전체를 동기화하지 않는다.
+2. **저장 자동 패키징:** System Master PC의 가벼운 파일 감시기가 저장 안정화 후 Skill 전체를 불변 revision 패키지로 만들고 파일목록·hash·revision manifest를 자동 생성한다. 읽는 동안 파일이 바뀌면 재시도한다. 다중 파일 생성 도구는 작업 완료 시 묶어서 확정하고, 일반 편집은 짧은 안정화 구간을 사용한다. 사용자가 manifest를 작성하거나 게시 버튼을 누르지 않는다.
+3. **전달 완전성:** 패키지·manifest는 CllC의 별도 배포 하위영역으로 전달한다. 수신 bridge는 manifest가 먼저 도착해도 파일 전부의 hash가 일치하기 전에는 활성화하지 않는다. 단순 “몇 초간 파일 변화 없음”만으로 Cloud 전송 완료를 판단하지 않는다.
+4. **WSL 배포:** 공용 PC bridge는 해당 배포 목록을 기본 10초마다 가볍게 확인하고 변경 revision만 로컬 staging에 풀어 검증한다. 이벤트 감지는 속도 개선용이며 유일한 전달 수단으로 삼지 않는다. 이 과정은 결정적인 파일 처리이며 LLM 예약 호출이나 전체 AgwA 재검색을 사용하지 않는다.
+5. **OpenClaw 로딩:** WSL 로컬의 활성 배포 root를 `skills.load.extraDirs`에 한 번 등록하고 `skills.load.watch: true`를 사용한다. Cloud 원본·staging·이전 revision을 로딩 root에 넣지 않는다. 배포 시 `SKILL.md`의 배포 revision 표기도 갱신해 보조 파일만 바뀌어도 새 snapshot을 만들도록 한다.
+6. **사용 가능 확인:** 파일 복사 완료와 OpenClaw에서의 발견·실행 적합성을 따로 확인한다. 대상 Agent의 유효 Skill 목록에서 해당 이름·revision이 확인되어야 `READY`다. watcher가 반영하지 않으면 `WAITING_REFRESH`로 표시하고 설치 버전에서 지원하는 갱신 방법을 사용한다. 저장마다 Gateway 재시작을 기본으로 삼지 않는다.
+
+OpenClaw는 추가 Skill 디렉터리와 파일 감시를 지원하며, file-backed Skill의 변경은 다음 Agent 턴에서 반영된다. extraDirs는 우선순위가 낮고 Agent별 allowlist·환경 조건도 적용되므로, 단순 파일 배치가 사용 가능을 보장하지 않는다. 근거: [Skills](https://docs.openclaw.ai/tools/skills), [Skills config](https://docs.openclaw.ai/tools/skills-config). 구현 전 현재 설치 버전에서도 확인한다.
+
+**“바로 사용”은 정상 동기화 후 다음 요청에서 사용한다는 뜻이다.** 목표는 수신 PC에 완전한 패키지가 도착한 뒤 30초 안에 검증·로딩 준비를 마치는 것이며, 새 의존성·충돌·실행 중 변경 대기는 제외하고 별도 표시한다. OneDrive 전송시간은 별도 측정한다. 양쪽 PC·동기화·bridge가 꺼져 있으면 즉시 반영을 보장하지 않는다.
+
+### 5.3 자동 검증·충돌·복귀
+
+- `SKILL.md` 이름·설명, 상대 참조, 파일 완전성, 경로 이탈·외부 symlink, 금지된 비밀·개인 자료, 대상 OS·도구·환경 조건을 검사한다. 정적 검사만으로 비민감성을 보증하지 않으며 System Master는 비민감 공용 내용만 작성한다.
+- 공용 이름은 `tceu-shared-` 접두어로 구분하고 기존 유효 이름과 충돌하면 적용하지 않는다. 대상 Agent의 공개 범위는 최초 설정하며 read-only Agent의 도구 권한을 넓히지 않는다.
+- portable 지침과 기존 허용 환경에서 실행 가능한 보조 스크립트는 자동 반영한다. Windows 전용 실행·새 바이너리·자격증명·외부 서비스·권한 변경이 필요하면 `NEEDS_SETUP`과 필요한 조치만 알린다. CnwC에서 동작했다는 이유로 WSL 호환을 가정하거나 패키지 설치·코드를 검증 명목으로 임의 실행하지 않는다.
+- 활성 revision 전환은 bridge가 관리한다. 실행 중 작업이 참조하는 파일을 덮어쓰지 않는다. revision 고정 실행이 없는 경우 해당 작업이 끝날 때까지 전환을 대기시키고, 대기 사유를 표시한다. staging을 완성한 뒤 활성 경로 전환·snapshot 갱신을 하나의 직렬 작업으로 처리한다.
+- 실패한 업데이트는 활성화하지 않고 이전 정상 revision을 유지한다. 새 Skill이면 사용 불가로 표시한다. `READY(revision)`, `SYNCING`, `WAITING_REFRESH`, `NEEDS_SETUP`, `ERROR`와 마지막 확인 시점을 CllC의 작은 자동 상태표에 기록한다. 정상 변경마다 메시지를 보내지 않고 질문 시 상태를 답하며 조치가 필요한 오류만 알린다.
+- 공용 Skill의 명시적 retired 표시는 로딩에서 제외한다. 네트워크 장애나 일시적인 원천 누락을 삭제 명령으로 해석하지 않는다. 비민감 공용 자산에 한해 오프라인에서 마지막 검증본을 버전·stale 상태와 함께 사용할 수 있다. 이는 개인 임시 자료 접근의 예외가 아니다.
+
+등록·수정·폐기는 System Master가 맡고 다른 구성원은 비민감 후보만 제출한다. 부재 시 명시된 Acting Master 한 명이 맡는다. 이 기술 역할은 업무 승인권을 대신하지 않는다. 공유 폴더·배포본의 쓰기 범위는 최초 연결 때 확인한다.
+
+### 5.4 기존 전문 Agent 재사용
 
 Telegram의 기존 토픽·고정 메시지·연결 Skill에서 Agent 역할을 확인하고 승인된 정의를 재사용한다. 대화로 추정한 persona를 정식 정의로 바꾸지 않는다. 각 전문 Agent의 목적·하지 않을 일·작업량 한도·인계·도구 권한·근거만 짧게 정한다.
 
 검색 전용과 원천 변경 작업은 권한을 구분한다. 토픽 분리만으로 memory·session·도구가 격리되었다고 판단하지 않는다. Lane을 추가할 때 routing, 교차 문맥 차단, read-only 쓰기 거부와 공통 모델·브라우저 자원의 동시성 영향을 시험한다. Coordinator는 반복된 인계 병목이 확인될 때 검토한다.
 
-이전 Grok 관련 제안에서는 **대화형 업무 정의, 진행 상태 표시, 짧은 인계, 검증된 반복 routine**만 차용한다. 새 bot·Cloud PC 도입을 기본으로 삼지 않는다. 반복 routine은 대화 기억이 아니라 버전된 절차·표본·검증·복귀 방법이 있어야 한다. Lane 확대·예약 pickup·Power Automate 도입은 필요가 확인된 별도 작업이다.
+이전 Grok 관련 제안에서는 **대화형 업무 정의, 진행 상태 표시, 짧은 인계, 검증된 반복 routine**만 차용한다. 새 bot·Cloud PC 도입을 기본으로 삼지 않는다. 반복 routine은 대화 기억이 아니라 버전된 절차·표본·검증·복귀 방법이 있어야 한다. Lane 확대·업무 task 예약 pickup·Power Automate 도입은 필요가 확인된 별도 작업이며, 여기서 정한 공용 Skill 전달 bridge와 구분한다.
 
 ## 6. 도입 확인과 복귀
 
@@ -107,6 +150,8 @@ Telegram의 기존 토픽·고정 메시지·연결 Skill에서 Agent 역할을 
 | 현재 상태 | 두 PC의 경로·역할, 원격 owner/ACL, 기존 문서·검색·동기화, 실제 runtime workspace | 보고된 사실과 직접 관찰을 구분하고 필요한 의존성 해결 |
 | 비민감 시험 | 합성 결과 1건의 CllC 저장→Cloud 반영→System Master 열람·편집, 재게시 충돌 확인, 개인 입력의 권한 회수 시험 | 같은 Cloud item임을 확인; 양쪽 증거 일치; 회수 후 원천 재열람·캐시 우회 없음 |
 | 제한 실사용 | 저위험 업무 1종으로 전체 작업·검토·인계·복귀 | 승인 범위 안에서 완료, 기존 업무 영향 없음, 복귀 검증 성공 |
+
+공용 Skill 수용 시험은 새 Skill 작성·기존 Skill 수정·보조 파일만 수정한 경우마다 다음 요청의 실제 이름·revision·비민감 실행 결과를 확인한다. 전송 중 일부 파일 누락, 이름 충돌, 의존성 부족, 실행 중 업데이트, 오프라인·재연결, retired도 시험한다. 개인 CnwC 공유를 회수해도 공용 Skill은 동작하고 개인 원천 접근은 거부되어야 한다. 지연 측정은 저장→패키지 수신과 수신→로딩을 구분하며, 이 시험 전에는 자동 공유가 구현됐다고 보고하지 않는다.
 
 파일명이나 상대경로가 같다는 것만으로 동일 Cloud 파일이라 판단하지 않는다. 실제 item 식별과 허용된 표본의 timestamp·size·가용성을 확인한다. online-only 파일이 로컬에서 읽힌다고 가정하지 않으며, 사전 점검 중 다운로드·pin을 임의로 시작하지 않는다. 필요한 영구 공유 표본만 좁게 준비하고 임시 개인 자료는 pin하지 않는다.
 
@@ -122,7 +167,7 @@ queue·index 갱신처럼 운영 중 생기는 변화는 변경 작업의 영향
 
 ## 7. 현재 상태와 다음 행동
 
-2026-09-08 기준. 이 표는 이번 문서 작업에서 확인한 범위이며 전체 시스템 진단 결과가 아니다.
+현장 관찰은 2026-09-08, 공용 Skill 설계 갱신은 2026-09-09 기준이다. 문서 설계와 구현 상태를 구분하며 전체 시스템 진단 결과로 해석하지 않는다.
 
 | 항목 | 상태·근거 | 다음 확인 |
 |---|---|---|
@@ -131,7 +176,8 @@ queue·index 갱신처럼 운영 중 생기는 변화는 변경 작업의 영향
 | RAG | 문서 검색 코드, cache/index, Wiki KB 디렉터리 존재 확인 | 원천별 보존 적합성·갱신 상태·export 범위 |
 | CllC | 지정 OneDrive 하위 로컬 폴더·운영 초안 생성 | Cloud 동기화, Owner/Editor 권한, System Master 열람·편집 |
 | 민감정보 미저장 | 사용자 운영 원칙 반영 | 세션·로그·색인 경로의 기술적 준수와 기존 잔존 자료 |
-| 자동 배포·정기 갱신 | 이번 작업에서 구현·실행하지 않음 | 필요 업무와 보존 범위를 정한 뒤 별도 적용 |
+| 공용 Skill 자동 반영 | 5장의 저장→자동 배포→다음 요청 로딩 설계 반영. bridge·loader 실제 설정은 미구현 | 6장의 공용 Skill 수용 시험 후 사용 가능 판정 |
+| KB 자동 배포·정기 갱신 | 이번 작업에서 구현·실행하지 않음 | 필요 업무와 보존 범위를 정한 뒤 별도 적용 |
 | 통합 도입 | **미검증** | 두 PC의 비민감 결과 1건 왕복 확인과 권한 회수 시험 |
 
 이전 2026-08-20~21의 Stage 1 HOLD는 역사 기록이며 완료로 바꾸지 않는다. 당시 Cloud 동일성·ACL, 업무 PC runtime/동기화, Gateway 인증·session 격리, 회귀·복귀, 운영 변화 원인 확인은 새 연결 전에 현재 상태로 재검증한다. AgwA 폴더 존재 확인만으로 그 HOLD가 해소된 것은 아니다. 당시 상세 수치·Gate 기록은 Git 이력에서 확인한다.
@@ -149,7 +195,7 @@ System Master는 실제 증거가 생길 때 이 표와 날짜·버전을 갱신
 | 공용 1+1·개인 3역할 | AgwA와 CllC 역할 분리, CnwC의 Version·Vault·Context 결합 유지 |
 | Direct Workspace·portable core | 정상 저장으로 인계, 기존 업무 폴더 유지, runtime은 장치 로컬 |
 | in-place 최적화·의존성 분류 | 전체 재구성 없이 필요한 결과 공유만 추가 |
-| Skill 3 Scope·System Master | 정본·candidate·검증·retired/복귀 책임 유지 |
+| Skill 3 Scope·System Master | CllC 공용 정본 직접 작성, 자동 검증·AgwA 배포, candidate·retired/복귀 책임 유지 |
 | identity·task·single writer | 최소 task 기록, 중복 실행·교차 문맥·덮어쓰기 방지 |
 | Stage baseline→shadow→canary | 현재 상태→비민감 시험→제한 실사용으로 압축 |
 | 두 PC checkpoint·Cloud 동일성·rollback | 실제 왕복 검증, 미검증 표시, 업무 연속성·복구 |
