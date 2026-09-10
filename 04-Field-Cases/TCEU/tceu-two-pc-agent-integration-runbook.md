@@ -1,10 +1,10 @@
 ---
 title: TCEU 두 PC 운영 Runbook
 type: field-case-runbook
-status: policy-defined-implementation-unverified
-version: 2.1
+status: partially-verified-kb-exchange-complete
+version: 2.2
 created: 2026-08-15
-last_reviewed: 2026-09-09
+last_reviewed: 2026-09-10
 ---
 
 # TCEU 두 PC 운영 Runbook
@@ -109,7 +109,7 @@ System Master: CnwC에서 공용 Skill 작성 요청
   → 검증된 로컬 배포본 활성화 → OpenClaw 다음 요청에서 사용
 ```
 
-다음은 **구현할 운영 계약**이다. OpenClaw의 내장 기능과 별도 제작할 자동 전달 bridge를 구분한다.
+다음은 **구현 기준**이다. 송신·수신 bridge와 OpenClaw 연결은 구현·시험됐으며, 실제 통과 범위와 남은 조건은 7장에 기록한다. 내장 로딩 기능과 별도 전달 bridge를 구분한다.
 
 1. **최초 한 번 설정:** System Master의 Shared-Skills 편집 위치, 공용 PC의 해당 OneDrive 동기화 위치, WSL 배포 영역, 대상 Agent·기존 실행 권한을 연결한다. 자동화는 이 공용 영역만 읽는다. 필요한 비민감 공용 파일만 로컬 가용하게 설정하며 CnwC 전체를 동기화하지 않는다.
 2. **저장 자동 패키징:** System Master PC의 가벼운 파일 감시기가 저장 안정화 후 Skill 전체를 불변 revision 패키지로 만들고 파일목록·hash·revision manifest를 자동 생성한다. 읽는 동안 파일이 바뀌면 재시도한다. 다중 파일 생성 도구는 작업 완료 시 묶어서 확정하고, 일반 편집은 짧은 안정화 구간을 사용한다. 사용자가 manifest를 작성하거나 게시 버튼을 누르지 않는다.
@@ -167,26 +167,33 @@ queue·index 갱신처럼 운영 중 생기는 변화는 변경 작업의 영향
 
 ## 7. 현재 상태와 다음 행동
 
-현장 관찰은 2026-09-08, 공용 Skill 설계 갱신은 2026-09-09 기준이다. 문서 설계와 구현 상태를 구분하며 전체 시스템 진단 결과로 해석하지 않는다.
+2026-09-10 인계문서·시험 보고서와 사용자 제공 System Master 확인을 반영했다. 서비스·Agent 실행 결과는 인계 증거 기준이며 이번 문서 갱신에서 전체 실행 시험을 반복하지 않았다. KB 최신본의 hash는 로컬 파일에서 재대조했다.
 
-| 항목 | 상태·근거 | 다음 확인 |
+| 항목 | 상태·근거 | 남은 확인 |
 |---|---|---|
-| CnwC | System Master 소유·Agent 계정 Viewer: 사용자 설명 | 실제 폴더 위치·현재 권한·회수 동작 |
-| AgwA | 지정 WSL workspace의 로컬 존재 확인 | 실행 중인 OpenClaw의 workspace 설정과 일치 여부 |
-| RAG | 문서 검색 코드, cache/index, Wiki KB 디렉터리 존재 확인 | 원천별 보존 적합성·갱신 상태·export 범위 |
-| CllC | 지정 OneDrive 하위 로컬 폴더·운영 초안 생성 | Cloud 동기화, Owner/Editor 권한, System Master 열람·편집 |
-| 민감정보 미저장 | 사용자 운영 원칙 반영 | 세션·로그·색인 경로의 기술적 준수와 기존 잔존 자료 |
-| 공용 Skill 자동 반영 | 5장의 저장→자동 배포→다음 요청 로딩 설계 반영. bridge·loader 실제 설정은 미구현 | 6장의 공용 Skill 수용 시험 후 사용 가능 판정 |
-| KB 자동 배포·정기 갱신 | 이번 작업에서 구현·실행하지 않음 | 필요 업무와 보존 범위를 정한 뒤 별도 적용 |
-| 통합 도입 | **미검증** | 두 PC의 비민감 결과 1건 왕복 확인과 권한 회수 시험 |
+| CnwC | 공용 Skill 작성 안내·loader 연결을 System Master 인계에서 확인. 개인 원문·memory·Skill 전체는 복사하지 않음 | 시험용 Viewer 회수 뒤 원천 접근 거부·잔존 사본 확인 |
+| AgwA·CllC | 인계문서에서 실제 OpenClaw 로딩, Cloud 동일성, Owner/Editor와 편집·동기화 확인 | 아래 잔여 시험 외 전체 시스템 보안 감사로 일반화하지 않음 |
+| 공용 Skill 자동 반영 | `tceu-shared-skill/v1` 송신·수신, 본문·보조 파일 변경·복귀, 최종 revision/hash 대조, `main` 다음 요청 실제 호출 PASS | System Master 재로그온/재부팅 후 자동 시작·단일 watcher |
+| 수신부 장애·복구 | 누락·hash 불일치·이름 충돌·의존성 부족·activation 실패 복귀·retired, 서비스 재시작·단일 receiver PASS | 일반 Agent 실행과 실행 lease의 자동 연결은 미검증; receiver 단위시험 PASS와 구분 |
+| KB·작업 결과 공유 | **완료 — 선정한 비민감 운영 KB와 시험 artifact 범위**. 공용 PC 실제 호출·hash 및 System Master Cloud 열람 PASS | 다른 업무 KB로 확대할 때 원천별 보존·공유 적합성 확인 |
+| KB 자동 갱신 | 원천 감지 path unit와 5분 fallback timer가 active/enabled로 보고됨. 불변 release·artifact, 동일 hash 무재작성·사람 메모 보존 시험 PASS | 운영 중 오류·최신성 점검 |
+| 민감정보 미저장 | 이번 전달 대상에서 Wiki·Issue KB, 검색 DB·cache, 개인 workspace·memory·Skill 제외 | 기존 잔존 자료와 모든 세션·로그의 기술적 차단 완료를 뜻하지 않음 |
+| 전체 통합 | **부분 검증**. KB 교환 완료와 Skill 연계 잔여 검증을 분리 | 아래 세 항목 완료 전 전체 완료로 표시하지 않음 |
 
-이전 2026-08-20~21의 Stage 1 HOLD는 역사 기록이며 완료로 바꾸지 않는다. 당시 Cloud 동일성·ACL, 업무 PC runtime/동기화, Gateway 인증·session 격리, 회귀·복귀, 운영 변화 원인 확인은 새 연결 전에 현재 상태로 재검증한다. AgwA 폴더 존재 확인만으로 그 HOLD가 해소된 것은 아니다. 당시 상세 수치·Gate 기록은 Git 이력에서 확인한다.
+KB 작업 `TCEU-CLLC-KB-ARTIFACTS-20260910`은 완료다. 원천은 CllC 설치 자료의 비민감 `PROTOCOL.md`와 `README.md` 두 파일로 제한했고, KB는 `tceu-shared-skills-operations`다. System Master의 실제 Cloud 열람은 **2026-09-10 08:54:43 CEST**, Knowledge manifest/LATEST 및 Artifact manifest/Markdown 모두 PASS로 보고됐다. 해당 확인은 업무 Wiki·Issue KB 전체 공유 완료를 의미하지 않는다.
 
-매 작업에는 결과와 blocker만, 주간에는 실패·중복·동기화 충돌·업무 소요시간을, 월간에는 접근권한·불필요한 보존·미사용 자동화·복구 가능성을 확인한다. 이는 운영 권장 주기이며 예약 작업 생성 지시가 아니다.
+Skill 작업 `TCEU-IMPLEMENT-20260910-01`의 다음 행동:
+1. **System Master PC:** 재로그온/재부팅 뒤 송신 예약 작업 자동 시작과 watcher 1개를 확인한다.
+2. **두 PC:** 소유자가 시험용 CnwC Viewer만 회수한 뒤, 공용 PC에서 원천 재접근 거부·잔존 사본 확인과 공용 Skill 재호출을 검증한다. CllC 권한은 유지한다.
+3. **공용 PC:** 일반 장시간 OpenClaw 실행이 실제 lease를 획득·해제하도록 연결하고 실행 중 update를 통합 시험한다. 연결 확인 전에는 해당 실행 도중 revision 전환이 안전하다고 판단하지 않으며, 안전한 유휴 시점에만 적용한다.
 
-System Master는 실제 증거가 생길 때 이 표와 날짜·버전을 갱신한다. 상세 내부 근거는 제한된 로컬/CllC에 두고 공개 Git에는 비민감 요약만 반영한다. 갱신 직전 Git 버전을 비교해 동시 변경을 보존한다. 쓰기 실패 시 최소 변경안을 반환하고 완료로 보고하지 않는다.
+송신 시험의 저장→manifest는 약 3.85~4.34초, manifest→READY 상태표는 12~57초로 기록됐다. 후자는 Cloud 전달·상태 반영을 포함하므로 5장의 “완전 수신 후 30초” 목표와 직접 비교하지 않는다. 실제 요청 처리시간도 배포 지연과 구분한다.
 
-반복 검증된 **Evidence → Insight → Policy**만 [공통 분석 리포트](https://github.com/coolwindjo/AX-Consulting-Agent-Framework/blob/main/01-Analysis/ax-consulting-agent-framework-report.md)와 [적용 Prompt Set](https://github.com/coolwindjo/AX-Consulting-Agent-Framework/blob/main/02-Implementation/ax-customer-llm-prompt-runbook.md)에 환류한다. 일회성 로그와 민감 원문은 승격하지 않는다.
+8월 Stage 1 HOLD는 역사 기록이다. 이번에 확인된 Cloud·Skill·KB 항목만 갱신하며, 과거 Gateway 인증·격리·업무 회귀 등의 미확인 사항을 일괄 해결로 바꾸지 않는다. 상세 내부 근거와 hash는 CllC의 인계문서·시험 보고서에 유지하고 공개 Git에는 비민감 요약만 남긴다.
+
+매 작업에는 결과와 blocker만, 주간에는 실패·중복·동기화 충돌·업무 소요시간을, 월간에는 접근권한·보존·미사용 자동화·복구 가능성을 확인한다. 구현된 KB 5분 fallback 외 새 예약 작업을 이 문구만으로 생성하지 않는다.
+
+System Master는 실제 증거에 따라 상태·날짜·버전을 갱신한다. Git 최신 변경을 보존하고 운영 사본을 맞추며, 쓰기 실패를 완료로 보고하지 않는다. 반복 검증된 **Evidence → Insight → Policy**만 [공통 분석 리포트](https://github.com/coolwindjo/AX-Consulting-Agent-Framework/blob/main/01-Analysis/ax-consulting-agent-framework-report.md)와 [적용 Prompt Set](https://github.com/coolwindjo/AX-Consulting-Agent-Framework/blob/main/02-Implementation/ax-customer-llm-prompt-runbook.md)에 환류한다.
 
 ## 8. 기존 문서에서 차용한 핵심
 

@@ -1,15 +1,17 @@
 ---
 title: TCEU 운영 Runbook 사용 안내
 type: field-case-usage-guide
-status: policy-defined-implementation-unverified
-version: 2.1
+status: partially-verified-kb-exchange-complete
+version: 2.2
 created: 2026-08-20
-last_reviewed: 2026-09-09
+last_reviewed: 2026-09-10
 ---
 
 # TCEU 운영 Runbook 사용 안내
 
 기준은 [두 PC 운영 Runbook](./tceu-two-pc-agent-integration-runbook.md) 하나다. Git의 최신판을 읽고, CllC 사본은 버전과 내용을 검증해 갱신한다. 실제 경로·계정·개인 공유 링크는 해당 PC의 제한된 안내에서 확인하며 공개 Git에 넣지 않는다.
+
+**2026-09-10 재개 위치:** KB·결과 공유는 선정한 운영 KB 범위에서 완료했다. 공용 Skill 송수신도 구현되어 있으므로 기존 설치를 반복하지 않는다. System Master 재로그온 자동 시작, 개인 공유 회수 뒤 두 PC 확인, 일반 OpenClaw 실행 lease 연결의 세 잔여 항목부터 Runbook 7장과 최신 CllC 인계문서를 따라 검증한다.
 
 ## 1. 어느 PC에서 무엇을 하는가
 
@@ -71,7 +73,7 @@ CnwC의 등록된 공용 Skill 위치를 통해 CllC/Shared-Skills 정본에 직
 
 일상 사용에는 수동 복사·설치 명령·재승인·Git push가 필요 없다. `READY` 뒤 AgwA에 “공용 Skill [이름]으로 이 작업을 수행해 주세요”라고 요청한다. 새 실행 환경이 필요한 경우만 `NEEDS_SETUP` 조치를 진행한다. 공용 Skill 자체를 공개 Git에 게시한다는 뜻은 아니다.
 
-최초 구현은 Runbook 5장의 정본 위치 등록, 저장 감시·자동 패키징, 공용 PC 수신 bridge, OpenClaw extraDirs/watch와 대상 Agent 설정을 한 번 연결하는 작업이다. 패키지 누락·업데이트·퇴역과 다음 요청 반영까지 Runbook 6장 시험을 통과해야 완료다. 현재 문서 작성만으로 이 연결이 실행된 것은 아니다.
+최초 구현은 Runbook 5장의 정본 위치 등록, 저장 감시·자동 패키징, 공용 PC 수신 bridge, OpenClaw extraDirs/watch와 대상 Agent 설정을 한 번 연결하는 작업이다. 패키지 누락·업데이트·퇴역과 다음 요청 반영까지 Runbook 6장 시험을 통과해야 완료다. 현재 송신·수신·실제 호출은 확인됐고, 남은 통합 검증은 Runbook 7장에 따른다. 재설치는 장애가 확인된 범위에서만 수행한다.
 
 ## 5. 변경·실패 처리
 
