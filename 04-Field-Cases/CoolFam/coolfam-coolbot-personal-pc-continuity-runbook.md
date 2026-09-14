@@ -5,8 +5,8 @@ tags: [coolfam, openclaw, google-drive, field-case]
 type: field-runbook
 status: operational-go
 created: 2026-08-20
-last_verified: 2026-09-10
-revision: operational services preserved; recurring backup deferred by user; legacy attachment cleanup inventory pending
+last_verified: 2026-09-14
+revision: scheduler recovery passed; approved legacy non-important attachment cleanup verified
 ---
 
 # CoolFam 운영 Runbook
@@ -225,6 +225,9 @@ msgvault 0.18.0 기본 흐름은 IMAP 전체 MIME을 읽고 `message_raw`와 att
 | 2026-09-10 | 일반 Artifacts MacBook 연결 | `GENERAL_ARTIFACTS_ACCESS_PASS`. MacBook에서 기존 정본의 materialization·provider metadata 동일 Cloud item·비민감 결과물 직접 열람과 정확 문자열 검색·Editor 접근 PASS. 단일 진입점은 materialized `OpenClaw_Output` 폴더로 확정. 변경 0건; 개인 소유 이메일 KB는 대상에서 제외 |
 | 2026-09-10 | 정기 backup·보존정책 결정 | `DEFERRED_BY_USER`. CoolBot 운영 데이터와 검증된 이관·복구 사본은 유지하되 정기 snapshot·자동 전송·세대 회전 구축은 이번 범위에서 제외하며 후속 작업의 선행조건으로 요구하지 않음. 기존 bundle·repository·shadow·복구 사본 삭제 승인 없음. 외장하드·Drive 원본 backup·추가 파일 암호화는 사용하지 않고 CoolBot ACTIVE·MacBook scheduler PAUSED 유지 |
 | 2026-09-10 | 기존 비중요 첨부 정리 inventory | `READ_ONLY_ESTIMATE`. 두 source의 exact 사용자 생성 중요 mailbox가 고유하게 매칭됐고 현재 DB membership 기준 중요 1,799·비중요 10,904·분류 불명 0. attachment object는 중요 전용 767, 비중요 전용 1,162, 양쪽 공유 110. 비중요 전용 pack payload 약 508.2 MB와 비중요 attachment 메시지의 압축 MIME 약 659.5 MB가 재작성·DB 회수의 최대 후보이며, 합계 약 1.09 GiB는 구현 전 추정치다. 공유 object·중요 자료·기존 복구 사본은 보존. 서버 원문 존재 여부 미확인. 삭제·MIME 변환·pack 재작성·DB 축소 0건, scheduler 변경 0건 |
+| 2026-09-14 | 이메일 scheduler 연속 실패 복구 | `PENDING_MACBOOK_RECOVERY_CHECK`. 9월 11–14일 06:00 예약 4회는 0.09–0.26초 내 동일하게 vector DB preflight에서 종료되어 인증·sync·embedding·게시 미진입. scheduler의 구형 Python/SQLite 선택이 원인이며 마지막 성공 환경의 Python 3.14/SQLite 3.53 runtime을 runner에 절대경로로 고정, 최소 scheduler 환경 preflight PASS. mutex·writer 0 확인 후 수동 재시험 1회 성공: 두 source +49/+49, 변경·중복·실패 0, archive·FTS 12,802 일치, vector 98/98·실패 0, 신규 98건 모두 첨부 제외 MIME·attachment 저장 0. 문서 2·manifest 1·complete marker 1의 CoolBot hash PASS, 보호 로그의 주소·메일 헤더·첨부명 패턴 0. scheduler ID·manifest·06:00 Europe/Berlin·ACTIVE 일치, MacBook materialization 확인 대기. 첨부 정리·snapshot·credential·MacBook scheduler 변경 0건 |
+| 2026-09-14 | 이메일 scheduler 복구 MacBook 확인 | `SCHEDULER_RECOVERY_PASS`. 최신 generation의 문서 2·manifest 1·complete marker 1을 MacBook에서 전부 materialize하고 hash·generation·source 5,653/7,149·총 12,802·기간·크기 일치 확인. 두 문서 열람과 source별 검증 문구 정확 검색, 게시→manifest→marker→materialization freshness 및 중복 0 PASS. MacBook scheduler PAUSED·변경 0건, CoolBot 기존 scheduler ID 하나 ACTIVE·manifest 일치 유지 |
+| 2026-09-14 | 기존 비중요 첨부 정리 | `LEGACY_ATTACHMENT_CLEANUP_PASS`. 기존 scheduler ID와 manifest를 함께 PAUSED하고 writer·lock 0, 최신 후보가 승인 집합 1,124 MIME·1,162 전용 object와 일치함을 확인. F1에서 대상 MIME 1,124·참조 1,711·object 1,162의 선택 복원 및 payload hash를 격리 시험해 누락 0 PASS. 작업 사본에서 본문을 유지한 첨부·filename 제외 MIME 변환, 비중요 참조 제거와 pack 재작성 후 source key·cursor·mailbox 상태·본문·중요 참조·공유/중요 object·FTS·vector·object hash 전건 PASS. 운영 DB 1,812,463,616→1,151,586,304 bytes, attachment store 814,218,589→309,255,253 bytes로 합계 1,165,840,648 bytes 감소. F1·이관 bundle·복구 사본 보존, 서버 변경·snapshot·정기 backup·Drive 게시 없음. 기존 scheduler ID와 manifest ACTIVE/06:00 Europe/Berlin 복원, writer 0·mutex free. 대형 검증 작업본은 복구 가능하도록 Trash로 이동돼 실제 파일시스템 공간 회수는 Trash 정리 전까지 보류 |
 | 2026-09-06 | PRUNE APPLY · Runbook + LLM 안내서 | 사용자 최신 목표와 로컬/링크 메타데이터 확인 반영. 범용 Bridge·샘플 Gate·반복 승인문을 제거하고 결과물 공유 + 이메일 이관으로 재구성. 시스템 변경 없음 |
 
 현재 상태:
@@ -233,8 +236,10 @@ msgvault 0.18.0 기본 흐름은 IMAP 전체 MIME을 읽고 `message_raw`와 att
 - 이메일 shadow 복원·재색인 및 운영 전환: `OPERATIONAL_GO`; log-safe production generation 양쪽 endpoint 검증 PASS
 - 두 계정 상시 읽기·보호된 로컬 KB: `DESIGN_AUTHORIZED`
 - 선택적 첨부 보존: `NAVER-B_LIMITED_PASS`; NAVER-A 첨부 보충 `NOT_VERIFIED_SKIPPED_BY_USER`이며 선행조건 아님. 이번 운영 신규분 분기는 `NOT_EXERCISED`
+- 기존 비중요 첨부 정리: `LEGACY_ATTACHMENT_CLEANUP_PASS`; 승인 고정 집합 MIME 1,124건과 비중요 전용 object 1,162개 처리, 중요·공유 object와 본문·검색 상태 보존, 운영 파일 1,165,840,648 bytes 감소. 검증 작업본은 Trash에 남아 파일시스템 공간 회수 대기
 - 이메일 Drive 문서: `OPERATIONAL_GO`; 개인 소유 폴더와 CoolBot 생성 개별 파일의 소유권·권한을 구분해 검증했고, 최신 운영 generation의 양쪽 materialization·hash·열람·검색·freshness PASS
 - 정기 backup·보존정책: `DEFERRED_BY_USER`; 자동 snapshot·직접 전송·세대 회전은 현재 구축하지 않고 후속 작업의 선행조건으로 요구하지 않음. 검증된 이관 bundle·repository·shadow·복구 사본은 삭제 승인 전까지 보존
+- 이메일 scheduler 복구: `SCHEDULER_RECOVERY_PASS`; runner runtime 고정, production 수동 재시험과 MacBook materialization·hash·열람·검색·freshness 모두 PASS. 기존 CoolBot scheduler ID 하나와 manifest는 ACTIVE/06:00 Europe/Berlin으로 일치하며 MacBook scheduler는 PAUSED 유지
 - 통합 baseline: 운영 generation 12,703건 양쪽 source-key 전건 일치; CoolBot scheduler `ACTIVE`, MacBook scheduler `PAUSED`, 기존 MacBook ID rollback `READY`
 - A·E0 모두 사용자 제공 결과로 수집 완료. CoolBot A의 ‘E0 없음’은 해소됐으며 재실행 불필요.
 
