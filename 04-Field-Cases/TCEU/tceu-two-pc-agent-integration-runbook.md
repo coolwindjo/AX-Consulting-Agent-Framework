@@ -1,251 +1,113 @@
 ---
-title: TCEU 두 PC 운영 Runbook
+title: TCEU 운영 Runbook
 type: field-case-runbook
-status: partially-verified-kb-exchange-complete
-version: 2.3
+status: partially-applied-promotion-pending
+version: 3.0
 created: 2026-08-15
 last_reviewed: 2026-09-19
 ---
 
-# TCEU 두 PC 운영 Runbook
+# TCEU 운영 Runbook
 
-**목적:** System Master가 TCEU Manager의 KB와 작업 결과를 쉽게 활용하고, 개인 원본은 필요한 작업 동안만 공유한다. 기존 업무를 유지하며 필요한 연결만 추가한다.
+목적은 두 가지다. **System Master가 Agent의 보관 허용된 KB·결과를 쉽게 이용하고, 개인 Skill은 System Master의 검토를 거친 revision만 팀에 배포한다.** 개인 원천은 필요한 작업 동안만 공유하며 Agent의 영구 기억으로 복제하지 않는다.
 
-이 Git 문서가 운영 기준의 정본이다. CllC에는 검증된 열람 사본을 두고, 실제 계정·장치 경로·제한된 원천 위치는 공개 Git 밖에서 관리한다. 실행 방법은 [LLM 사용 안내서](./tceu-runbook-llm-usage-guide.md)를 따른다. 문서 갱신은 권한 설정·자동화 구현·현장 검증 완료를 뜻하지 않는다.
+이 문서는 운영 계약·상태의 정본이다. 실행 문장은 [사용 안내서](./tceu-runbook-llm-usage-guide.md)에 둔다. 과거 설계·상세 시험은 Git 이력과 CllC 인계문서에 보존하고, 완료한 구축을 다시 실행하지 않는다.
 
-**지금 사용할 것:** 선정한 운영 KB와 결과물 공유는 인수 완료다. System Master는 CllC의 `Knowledge/`와 `Artifacts/`를 기존 진입점으로 이용한다. 공용 Skill의 기존 호출은 확인됐지만, 송신부 재로그온 지속성은 실패했고 실행 중 revision 보호는 미검증이다. 새 적용은 7장의 남은 항목부터 재개한다. 완료된 연결을 다시 설치하지 않는다.
+## 1. 공간과 권한
 
-이번 개정은 2026-09-19 인수 완료된 [CoolFam 사례](../CoolFam/coolfam-coolbot-personal-pc-continuity-runbook.md)의 교훈을 6장과 실행 안내에 반영했다. TCEU의 실행 증거는 2026-09-10 기록이며, 이번 검토일을 새 운영 시험일로 사용하지 않는다.
-
-## 1. 공간과 책임
-
-| 공간 | 담당·위치 | 운영 계약 |
+| 공간 | 책임 | 사용 범위 |
 |---|---|---|
-| **CnwC — Context Workspace for Continuity** | System Master의 업무 PC·개인 회사 OneDrive | 개인 문맥과 업무 원본. TCEU Manager 계정에는 필요한 폴더만 임시 Viewer |
-| **AgwA — Agent Workspace for Automation** | 공용 TCEU Manager PC의 기존 WSL OpenClaw workspace | 자동화 실행·runtime Skill·보관 허용된 RAG. 개인 민감자료 저장 금지 |
-| **CllC — Cloud library for Community Sharing** | TCEU Manager 계정 소유 OneDrive의 TCEU_Manager/CllC | 공유 가능한 KB·결과·운영문서. System Master 계정에 Editor 공유 |
-| Cloud workspace for Version control | System Master의 기존 CnwC와 같은 물리 root | working copy·변경이력. 별도 폴더를 늘리지 않음 |
-| Obsidian Vault for Organization | 같은 CnwC root; 필요하면 CllC 결과도 열람 | 사람이 문서를 탐색하는 도구. 실행·동기화 엔진으로 취급하지 않음 |
+| CnwC | System Master의 개인 업무 공간 | Context·Vault·Version은 기존 root의 논리 역할. 필요한 폴더만 TCEU Manager에게 임시 Viewer |
+| AgwA | TCEU Manager의 기존 OpenClaw workspace | 작업 실행과 보관 허용된 RAG. runtime·DB·index·cache는 장치 로컬 |
+| CllC | Agent 계정 소유, System Master Editor | 허용된 KB·완성 결과·운영자료·승인된 공용 Skill |
+| 각 멤버의 개인 Skill | 해당 멤버 | 개인 작성·시험. 공유 요청 전까지 자동 수집하지 않음 |
 
-System Master는 사람 책임자, TCEU Manager는 OpenClaw 별칭, Agent용 Microsoft 365 계정은 service identity다. 요청자·검토자·실행 Agent를 구분하며 계정을 사람 승인자로 취급하지 않는다.
+System Master는 사람 검토자이며 TCEU Manager는 OpenClaw 별칭이다. Agent가 자신을 승인자로 기록해서는 안 된다. 실제 계정·장치 경로·개인 공유 URL은 공개 Git에 넣지 않는다.
 
-CllC는 두 PC 사이의 결과 공유 공간이다. 기존 조직 SharePoint 원천 라이브러리를 교체하거나 통째로 복제하지 않는다. 과거의 “기존 조직 공용폴더가 곧 CllC” 전제는 이번 구조로 대체한다. 다른 구성원·고객·자동화로의 확대는 현재 범위에 포함하지 않는다.
+기존 CllC를 재사용한다. 멤버의 공용 Skill 이용에는 **승인된 Skill 배포 영역의 Viewer**만 부여한다. CllC root의 KB·Artifacts까지 자동 공개하지 않으며 제출 권한과 배포본 수정 권한을 분리한다. 멤버별 회사 계정·실행 도구·OS와 실제 ACL을 확인한 뒤 한 번 연결한다. 모든 멤버가 같은 Agent나 OS를 쓴다고 가정하지 않는다.
 
-```mermaid
-flowchart LR
-    M["System Master"] --> C["CnwC · 개인 원본"]
-    C -->|"작업 범위·기간 한정 Viewer"| A["AgwA · TCEU Manager"]
-    A -->|"보관·공유 가능한 KB와 결과"| L["CllC · 결과 공유"]
-    M <-->|"열람·편집"| L
-    L -->|"공용 Skill 자동 전달·검증"| A
-    G["Git · 운영문서 정본"] -->|"검증된 열람 사본"| L
-```
+## 2. KB·결과 사용
 
-## 2. 적게 복제하고 바로 사용하기
+- System Master는 기존 CllC 진입점에서 `Knowledge/`와 `Artifacts/`를 연다. 같은 Cloud item인지 확인하고, 로컬 검색을 사용하면 해당 출력 폴더에서 실제 열기·검색을 시험한다.
+- KB는 사람이 읽는 문서와 manifest를 제공한다. `version / source_ref / source_updated_at / generated_at / hash / 검증 상태`로 범위·최신성을 확인한다. live DB·vector index를 OneDrive로 열거나 전체 AgwA를 동기화하지 않는다.
+- 기존 불변 release와 task별 artifact 구조를 유지한다. 완전한 파일·hash를 확인한 뒤 최신본으로 안내하고 부분 전달이나 실패 시 마지막 정상본을 보존한다.
+- 자동 생성 영역의 writer는 Agent 하나다. 사람의 수정 의견은 `notes/` 등 별도 영역에 남긴다. 같은 파일을 두 PC에서 동시에 수정하지 않는다.
+- 선정 운영 KB의 공유 완료를 Wiki·Issue 등 모든 업무 KB의 보관·공유 허용으로 확대하지 않는다. 새 KB는 원천별 권한·보존 범위를 먼저 확인한다.
 
-- CnwC의 Version·Vault·Context는 한 root를 유지한다. 기존 업무 폴더를 그대로 쓰며, `Business`는 논리 역할명일 뿐 rename 지시가 아니다.
-- CnwC에는 portable 지침·정제된 기억·개인 Skill·최종 업무문서를 둔다. bootstrap, identity, memory, skills는 필요한 기존 파일만 읽고 빠졌다는 이유만으로 전부 생성하지 않는다.
-- loader·패키지·가상환경·임시 출력·세션·자격증명·실행 DB·브라우저 프로필은 장치 로컬에 둔다. AgwA 전체나 실행 DB를 OneDrive와 양방향 동기화하지 않는다.
-- CllC의 `Knowledge/`는 공유 가능한 읽기용 KB, `Artifacts/`는 작업별 결과, `README.md`는 시작 안내다. 공용 Skill이나 상태표는 실제 필요할 때 기존 적합 위치를 사용한다.
-- 정상적인 비민감 내부 결과는 CllC 작업 파일에 직접 저장하고 자동동기화한다. 이미 허용된 편집마다 별도 승인·outbox·수동 게시 단계를 추가하지 않는다.
-- 원천·KB·배포본의 책임을 구분한다. AgwA에서 내보낸 KB는 원천 참조와 버전을 표시하고, 사람이 CllC에서 수정했으면 재배포 전에 비교한다. 문서별 current writer는 한 명이며 충돌을 임의의 최신본 선택으로 해소하지 않는다.
-- Git은 운영문서 변경이력, OneDrive는 파일 동기화와 제공되는 버전 이력, backup은 복구 수단이다. 서로를 대체한다고 가정하지 않고 필요한 파일 복원을 실제 시험한다.
+로컬 저장, Cloud 반영, System Master 실제 열람은 별도 증거다. 서비스가 active인 것만으로 최신성이나 다른 PC 접근을 PASS로 판단하지 않는다.
 
-## 3. 임시 공유와 민감정보
+## 3. 임시 개인 원천
 
-**열람 권한과 보관 권한은 별개다.** CnwC 및 System Master 소유의 공유 OneDrive 폴더는 항상 임시 접근으로 취급한다.
+현재 작업에 필요한 목적·폴더 별칭·Viewer·기간만 요청한다. 제공된 새 공유는 해당 작업의 접근 권한이며 자동 색인·상시 보관 권한이 아니다.
 
-| 대상 | 처리 |
-|---|---|
-| 민감·개인 원문과 이를 재현하는 요약·추출문·OCR·임베딩·스크린샷 | AgwA 메모리·RAG·파일·로그와 CllC에 저장하지 않음 |
-| 임시 공유 입력의 분류가 불명확한 파생물 | 보관하지 않고 비민감화한 입력 또는 보존 범위 결정을 요청 |
-| 독립적으로 보관·공유가 허용된 비민감 자료와 결과 | 허용 범위에 한해 AgwA 처리·CllC 제공 |
-| 원천 위치 기억 | 소유자 역할, 비민감 폴더 별칭·위치 참조, 사용 목적, 재공유 필요 여부만 기록 |
-| 임시 공유 URL·토큰, 실제 계정·개인 경로 | 공개 Git에 기록하지 않음. 접근 토큰은 영구 기억에도 남기지 않음 |
+- 민감 원문과 이를 재현하는 추출문·요약·OCR·임베딩·스크린샷은 AgwA memory·RAG·로그·CllC에 저장하지 않는다. 도구가 transcript에 원문을 남기면 비민감 입력 또는 검증된 다른 처리 경로를 요청한다.
+- 기억은 소유자 역할, 비민감 목적/위치 별칭, 재공유 필요 여부만 남긴다. 실제 민감 위치 매핑은 System Master가 관리하고 공유 토큰을 저장하지 않는다.
+- 공유 회수 후 과거 URL·다운로드·cache로 접근을 우회하지 않는다. 다시 필요하면 소유자에게 현재 공유를 요청한다.
+- 직접 권한·조직 링크·상속 권한을 구분한다. 회수 확인은 Agent 계정의 원본 위치 응답으로 하고, 폐기된 공유 링크의 오류만으로 접근 차단을 단정하지 않는다.
+- 공유 해제와 로컬 사본 삭제는 별개다. 제한 검사 미발견은 PC 전체 부재가 아니며, 대상·보존 범위가 정해지지 않은 대량 삭제는 하지 않는다.
 
-폴더명 자체가 민감하면 중립 별칭과 소유자가 알아볼 수 있는 제한된 위치 참조를 사용한다. 위치를 확인하지 못했으면 추정해 기록하지 않는다.
+## 4. 개인 Skill → System Master 검토 → 팀 이용
 
-작업마다 현재 권한을 확인하고, 접근이 없거나 회수되면 해당 입력을 필요로 하는 작업을 멈춘다. 다른 계정·과거 다운로드·캐시로 우회하지 않고 필요한 폴더만 Viewer로 다시 요청한다. 공유 범위를 Agent가 넓히지 않는다.
+### 4.1 승격 계약
 
-임시 자료는 자동 동기화·고정 다운로드·예약 크롤링·상시 색인 대상에서 제외한다. 민감 내용을 자동 저장하는 세션·도구라면 원문을 넣기 전에 비민감화된 입력이나 저장하지 않는다고 검증된 처리 경로를 요청한다. 문구만으로 무저장을 보장하지 않는다.
+1. **개인 작성:** System Master와 멤버는 자기 환경에서 Skill을 만들고 시험한다.
+2. **후보 제출:** 작성자가 공용으로 쓸 별도 비민감 제출본만 준비한다. 개인 원본·memory·설정 전체를 복사하지 않는다. `tceu-shared-<name>` 이름, 상대 참조, 용도·의존성을 확인하고 검토 대기함에 snapshot ZIP·파일 hash를 둔다. 후보는 loader와 송신 watcher 밖에 둔다.
+3. **사람 검토:** System Master가 목적, 내용, 민감정보, 필요한 도구·권한, OS/의존성, 표본 결과와 정확한 bundle hash를 검토한다. 자기 작성 Skill도 본인이 확인한 뒤 승격하며 Agent가 승인을 대신하지 않는다.
+4. **승격:** 검토한 revision과 실제 사람 승인 근거를 연결한 뒤 게시한다. 승인 후 내용이 바뀌면 새 후보로 다시 검토한다. 기존 “공용 원본에 저장하면 무조건 배포” 안내는 이 계약으로 대체한다.
+5. **자동 이용:** 한 번 연결된 각 멤버 환경이 승인된 revision을 자동 수신·검증·로딩하고 다음 요청에서 사용한다. 승격 후 멤버별 수동 복사·반복 설치·재승인은 요구하지 않는다.
 
-공유 회수는 이미 생성된 사본을 없애지 않는다. 기존 AgwA의 민감자료 존재 여부와 잔존 범위는 별도 확인 대상이며, 발견 시 해당 접근·검색·배포를 먼저 중지하고 합의된 범위로 제거·재색인·백업 처리를 검증한다. 임의 전체 삭제나 “공유 해제=삭제 완료” 판정은 하지 않는다.
+“즉시”는 온라인·동기화·loader·의존성 준비가 끝난 환경에서 승인본 도착 후 다음 요청에 반영한다는 뜻이다. 전송시간, 오프라인, 미설치 의존성은 별도 표시한다. 모든 멤버의 실제 연결·호출 증거가 모이기 전 전체 이용 가능으로 표시하지 않는다.
 
-공유 화면의 `Can edit` 요약만으로 직접 권한을 추정하지 않는다. 직접 접근, 조직 범위 링크, 상속 권한을 구분하고 회수 대상과 다른 이용자 영향을 확인한다. 회수 후에는 폐기된 공유 링크의 오류만 확인하지 말고 해당 Agent 계정에서 원본 위치의 실제 응답을 확인한다. 개인 위치·URL은 공개 보고서에 남기지 않는다.
+### 4.2 정본·승인·배포 경계
 
-## 4. 작업·KB 인계
-
-1. **요청:** 작업 목적, 원천 범위, 자료등급, 결과 위치, 완료 기준을 정한다. 여러 단계·세션이 필요한 경우에만 고유 `task_id`를 사용한다.
-2. **접근:** 위치 참조와 현재 권한을 확인한다. CnwC가 닫혀 있으면 필요한 기간·폴더를 명시해 재공유를 요청한다.
-3. **실행:** 해당 task의 허용 입력만 읽고 지정 위치에 쓴다. 중복 claim을 거부하고 다른 사용자·task의 비공개 문맥과 분리한다.
-4. **인계:** 보관 가능한 결과를 CllC에 저장한다. 같은 task 안에 결과 상대경로·버전·확인 시점·제한사항을 짧게 남긴다.
-5. **완료:** 로컬 저장, Cloud 반영, System Master 열람을 구분해 확인한다. 업무상 승인이 필요한 결과는 검토가 끝나기 전 최종 승인으로 표시하지 않는다. 개인 원본 공유는 소유자가 회수한다.
-
-장기 작업의 최소 기록은 `task_id / requester / actor·writer / input_ref·등급 / state / output_ref / updated_at / blocker·next_action`이다. 승인·만료·복귀 정보는 해당 작업에 필요할 때 추가한다. 상태는 `queued → running → review_required(필요 시) → completed`, 예외는 `blocked / failed / cancelled`로 충분하다. 상태표를 유지하려고 단순 작업마다 YAML 파일을 만들지 않는다.
-
-KB는 먼저 사람이 읽을 수 있는 Markdown으로 제공한다. 원문·청크·검색 DB를 일괄 내보내지 않는다. 기계 검색용 export가 필요하면 원천별 보존·공유 권한, 완전성, 최신성, 갱신 방법부터 정한다.
-
-보관 허용된 KB에는 `source_ref / source_updated_at / fetched_at / export_version / 보존·만료 기준 / 검증 상태`를 기록한다. hash는 허용된 비민감 파일에만 사용하고 불가하면 사유를 남긴다. cache·index의 크기와 보존기간을 관리하며 stale·부분 색인은 최신 정본으로 제시하지 않는다. 문서·Wiki·Issue 등 서로 다른 원천은 갱신주기와 스키마를 유지하고 필요할 때 검색 결과를 합친다.
-
-외부 발송·권한 확대·원천 덮어쓰기·삭제·계약·결제는 해당 행동의 명시적 권한이 필요하다. 기존 사용자 지시로 허용된 범위는 반복 승인받지 않는다. Telegram에는 요청·상태·결과 참조만 전달하며 민감 원문이나 전체 Runbook을 상시 투입하지 않는다.
-
-## 5. 공용 Skill: 저장하면 AgwA에서 사용
-
-### 5.1 정본 하나, 평소에는 저장만
-
-**공용 Skill은 처음부터 `CllC/Shared-Skills/<name>/`에 만들고 System Master가 직접 편집한다.** CnwC의 작업 안내·장치별 loader에는 이 위치를 등록해 “공용 Skill을 만들어줘/수정해줘”가 같은 정본에 저장되도록 한다. CnwC에 별도 공용 본문을 두고 반복 복사하지 않는다. 탐색용 링크와 장치 로컬 adapter를 사용하며 Cloud 안에 Junction·symlink를 만들지 않는다.
-
-| Scope | 정본 | 반영 방식 |
+| 영역 | 의미 | 변경 권한 |
 |---|---|---|
-| 개인 Skill | 작성자의 CnwC | 개인으로 유지. “공용으로 전환”한 항목만 민감 참조를 제거해 CllC 정본으로 전환 |
-| 공용 portable Skill | CllC/Shared-Skills | System Master 저장이 배포 의도. 사전 설정한 범위에서는 자동 검증·반영, 매번 복사·승인·Git push 불필요 |
-| AgwA 실행 배포본 | WSL 로컬의 전용 shared-skill 배포 영역 | CllC에서 단방향 자동 생성. 편집 금지; 기존 AgwA 전용 skills와 구분 |
+| 개인 Skill | 작성자 작업본 | 작성자 |
+| `Skill-Candidates/` | 검토 중 snapshot·검토 결과, 자동 로딩 금지 | 지정 제출자·검토자, 후보 간 덮어쓰기 방지 |
+| `Shared-Skills/` | 검토를 통과한 공용 정본 | System Master 및 승인된 게시 작업 |
+| `Shared-Skills-Delivery/` | 불변 패키지·manifest와 명시적 활성 revision 선택 | 승인된 게시 작업; 멤버는 읽기 |
+| 각 PC의 로컬 배포 영역 | 검증된 실행 사본 | receiver; 직접 편집 금지 |
 
-기존의 “공용 Skill 자동 설치 금지”는 위 공용 정본의 자동 반영을 막지 않는다. 임의의 개인·외부 Skill 수집, 새 패키지 설치, 권한 확대는 별도다. 개인 Skill을 공용으로 전환할 때 System Master PC에서 같은 Skill이 이중 발견되지 않도록 이전 loader를 교체한다.
+위 표는 목표 ACL이다. 폴더 생성이나 JSON의 `approved` 필드만으로 권한·사람 승인이 강제됐다고 판단하지 않는다. 현재 승인·배포 ACL과 멤버 연결은 아직 미검증이다.
 
-공용 Skill은 지속 보관·공유하도록 명시한 비민감 자산이다. CnwC 임시 공유 회수와 독립적으로 계속 사용한다. 개인 원문·공유 토큰·개인 절대경로를 Skill에 넣지 않으며, 업무 중 개인 자료가 필요하면 실행 시 별도로 재공유받는다.
+공용 PC가 CllC 소유자라는 사실은 TCEU Manager에게 임의 승격 판단을 맡긴다는 뜻이 아니다. 멤버가 후보·배포본을 수정해 검토를 우회하지 못하도록 실제 원격 쓰기 권한과 게시 경로를 확인해야 한다.
 
-### 5.2 자동 전달·로딩 방법
+### 4.3 전달과 복귀
 
-```text
-System Master: CnwC에서 공용 Skill 작성 요청
-  → CllC/Shared-Skills 정본 저장
-  → 자동 패키징 → OneDrive 전달
-  → 공용 PC의 WSL 배포 bridge가 완전한 변경본 확인
-  → 검증된 로컬 배포본 활성화 → OpenClaw 다음 요청에서 사용
-```
+기존 ZIP·파일 inventory·SHA-256 검증을 재사용한다. 패키지·manifest의 Cloud 도착 순서를 가정하지 않고 불완전하거나 충돌한 revision은 활성화하지 않는다. 새 의존성·권한 확대는 자동 설치하지 않고 `NEEDS_SETUP`으로 표시한다.
 
-다음은 **구현 기준**이다. 송신·수신 bridge와 OpenClaw 연결은 구현·시험됐으며, 실제 통과 범위와 남은 조건은 7장에 기록한다. 내장 로딩 기능과 별도 전달 bridge를 구분한다.
+**수정시각으로 최신 revision을 추정하지 않는다.** 승격·원복 모두 정확한 revision과 package hash를 지정한 게시 선택 기록을 사용해야 한다. 원복은 기존 불변 패키지를 다시 선택하는 새 게시 행위이며 파일 mtime 변경이나 과거 패키지 삭제로 흉내 내지 않는다. 이 선택 계약의 기존 송신·수신부 연결은 아래 미완료 항목이다.
 
-1. **최초 한 번 설정:** System Master의 Shared-Skills 편집 위치, 공용 PC의 해당 OneDrive 동기화 위치, WSL 배포 영역, 대상 Agent·기존 실행 권한을 연결한다. 자동화는 이 공용 영역만 읽는다. 필요한 비민감 공용 파일만 로컬 가용하게 설정하며 CnwC 전체를 동기화하지 않는다.
-2. **저장 자동 패키징:** System Master PC의 가벼운 파일 감시기가 저장 안정화 후 Skill 전체를 불변 revision 패키지로 만들고 파일목록·hash·revision manifest를 자동 생성한다. 읽는 동안 파일이 바뀌면 재시도한다. 다중 파일 생성 도구는 작업 완료 시 묶어서 확정하고, 일반 편집은 짧은 안정화 구간을 사용한다. 사용자가 manifest를 작성하거나 게시 버튼을 누르지 않는다.
-3. **전달 완전성:** 패키지·manifest는 CllC의 별도 배포 하위영역으로 전달한다. 수신 bridge는 manifest가 먼저 도착해도 파일 전부의 hash가 일치하기 전에는 활성화하지 않는다. 단순 “몇 초간 파일 변화 없음”만으로 Cloud 전송 완료를 판단하지 않는다.
-4. **WSL 배포:** 공용 PC bridge는 해당 배포 목록을 기본 10초마다 가볍게 확인하고 변경 revision만 로컬 staging에 풀어 검증한다. 이벤트 감지는 속도 개선용이며 유일한 전달 수단으로 삼지 않는다. 이 과정은 결정적인 파일 처리이며 LLM 예약 호출이나 전체 AgwA 재검색을 사용하지 않는다.
-5. **OpenClaw 로딩:** WSL 로컬의 활성 배포 root를 `skills.load.extraDirs`에 한 번 등록하고 `skills.load.watch: true`를 사용한다. Cloud 원본·staging·이전 revision을 로딩 root에 넣지 않는다. 배포 시 `SKILL.md`의 배포 revision 표기도 갱신해 보조 파일만 바뀌어도 새 snapshot을 만들도록 한다.
-6. **사용 가능 확인:** 파일 복사 완료와 OpenClaw에서의 발견·실행 적합성을 따로 확인한다. 대상 Agent의 유효 Skill 목록에서 해당 이름·revision이 확인되어야 `READY`다. watcher가 반영하지 않으면 `WAITING_REFRESH`로 표시하고 설치 버전에서 지원하는 갱신 방법을 사용한다. 저장마다 Gateway 재시작을 기본으로 삼지 않는다.
+각 대상 상태는 `PENDING_REVIEW / APPROVED / SYNCING / READY(revision) / NEEDS_SETUP / ERROR`로 구분한다. READY는 로딩 준비이며 호출 성공과 다르다. 이름 충돌, 일부 파일 누락, 잘못된 hash, 오프라인·재연결, 이전 revision 원복을 검증한다.
 
-OpenClaw는 추가 Skill 디렉터리와 파일 감시를 지원하며, file-backed Skill의 변경은 다음 Agent 턴에서 반영된다. extraDirs는 우선순위가 낮고 Agent별 allowlist·환경 조건도 적용되므로, 단순 파일 배치가 사용 가능을 보장하지 않는다. 근거: [Skills](https://docs.openclaw.ai/tools/skills), [Skills config](https://docs.openclaw.ai/tools/skills-config). 구현 전 현재 설치 버전에서도 확인한다.
+실행 중인 요청의 revision 고정/전환 대기는 별도 수용 조건이다. 현재 일반 OpenClaw execution lease는 미검증이며, watcher 1개·수동 lock 시험·Gateway 정지만으로 모든 실행을 보호한다고 주장하지 않는다. 네트워크 장애를 퇴역 지시로 해석하지 않고 마지막 정상본을 보존한다.
 
-**“바로 사용”은 정상 동기화 후 다음 요청에서 사용한다는 뜻이다.** 목표는 수신 PC에 완전한 패키지가 도착한 뒤 30초 안에 검증·로딩 준비를 마치는 것이며, 새 의존성·충돌·실행 중 변경 대기는 제외하고 별도 표시한다. OneDrive 전송시간은 별도 측정한다. 양쪽 PC·동기화·bridge가 꺼져 있으면 즉시 반영을 보장하지 않는다.
+## 5. 현재 적용 상태
 
-### 5.3 자동 검증·충돌·복귀
+검토일은 2026-09-19다. 최신 직접 점검과 과거 인계, 사용자 설명을 구분한다.
 
-- `SKILL.md` 이름·설명, 상대 참조, 파일 완전성, 경로 이탈·외부 symlink, 금지된 비밀·개인 자료, 대상 OS·도구·환경 조건을 검사한다. 정적 검사만으로 비민감성을 보증하지 않으며 System Master는 비민감 공용 내용만 작성한다.
-- 공용 이름은 `tceu-shared-` 접두어로 구분하고 기존 유효 이름과 충돌하면 적용하지 않는다. 대상 Agent의 공개 범위는 최초 설정하며 read-only Agent의 도구 권한을 넓히지 않는다.
-- portable 지침과 기존 허용 환경에서 실행 가능한 보조 스크립트는 자동 반영한다. Windows 전용 실행·새 바이너리·자격증명·외부 서비스·권한 변경이 필요하면 `NEEDS_SETUP`과 필요한 조치만 알린다. CnwC에서 동작했다는 이유로 WSL 호환을 가정하거나 패키지 설치·코드를 검증 명목으로 임의 실행하지 않는다.
-- 활성 revision 전환은 bridge가 관리한다. 구현 수용 기준은 실행 중 작업의 revision 고정 또는 종료까지의 전환 대기이며, staging 완료 후 활성 경로 전환·snapshot 갱신을 직렬 처리한다. **일반 OpenClaw 실행과 이 대기 계약의 연결은 아직 미검증**이다. receiver의 수동 lock 시험이나 `READY`만으로 실행 중 보호가 동작한다고 판단하지 않는다.
-- 실패한 업데이트는 활성화하지 않고 이전 정상 revision을 유지한다. 새 Skill이면 사용 불가로 표시한다. `READY(revision)`, `SYNCING`, `WAITING_REFRESH`, `NEEDS_SETUP`, `ERROR`와 마지막 확인 시점을 CllC의 작은 자동 상태표에 기록한다. 정상 변경마다 메시지를 보내지 않고 질문 시 상태를 답하며 조치가 필요한 오류만 알린다.
-- 공용 Skill의 명시적 retired 표시는 로딩에서 제외한다. 네트워크 장애나 일시적인 원천 누락을 삭제 명령으로 해석하지 않는다. 비민감 공용 자산에 한해 오프라인에서 마지막 검증본을 버전·stale 상태와 함께 사용할 수 있다. 이는 개인 임시 자료 접근의 예외가 아니다.
-
-등록·수정·폐기는 System Master가 맡고 다른 구성원은 비민감 후보만 제출한다. 부재 시 명시된 Acting Master 한 명이 맡는다. 이 기술 역할은 업무 승인권을 대신하지 않는다. 공유 폴더·배포본의 쓰기 범위는 최초 연결 때 확인한다.
-
-### 5.4 기존 전문 Agent 재사용
-
-Telegram의 기존 토픽·고정 메시지·연결 Skill에서 Agent 역할을 확인하고 승인된 정의를 재사용한다. 대화로 추정한 persona를 정식 정의로 바꾸지 않는다. 각 전문 Agent의 목적·하지 않을 일·작업량 한도·인계·도구 권한·근거만 짧게 정한다.
-
-검색 전용과 원천 변경 작업은 권한을 구분한다. 토픽 분리만으로 memory·session·도구가 격리되었다고 판단하지 않는다. Lane을 추가할 때 routing, 교차 문맥 차단, read-only 쓰기 거부와 공통 모델·브라우저 자원의 동시성 영향을 시험한다. Coordinator는 반복된 인계 병목이 확인될 때 검토한다.
-
-이전 Grok 관련 제안에서는 **대화형 업무 정의, 진행 상태 표시, 짧은 인계, 검증된 반복 routine**만 차용한다. 새 bot·Cloud PC 도입을 기본으로 삼지 않는다. 반복 routine은 대화 기억이 아니라 버전된 절차·표본·검증·복귀 방법이 있어야 한다. Lane 확대·업무 task 예약 pickup·Power Automate 도입은 필요가 확인된 별도 작업이며, 여기서 정한 공용 Skill 전달 bridge와 구분한다.
-
-## 6. 도입 확인과 복귀
-
-옛 Stage/Gate의 목적은 유지하되 매번 대규모 도입 절차를 반복하지 않는다. 아래 표는 신규 연결·변경분의 수용 기준이다. 기존 설치에는 7장의 미완료 항목만 적용하고, 완료된 연결을 실행 대기 작업으로 되돌리지 않는다.
-
-| 단계 | 최소 확인 | 통과 기준 |
+| 항목 | 근거·상태 | 다음 행동 |
 |---|---|---|
-| 현재 상태 | 두 PC의 경로·역할, 원격 owner/ACL, 기존 문서·검색·동기화, 실제 runtime workspace | 보고된 사실과 직접 관찰을 구분하고 필요한 의존성 해결 |
-| 비민감 시험 | 합성 결과 1건의 CllC 저장→Cloud 반영→System Master 열람·편집, 재게시 충돌 확인, 개인 입력의 권한 회수 시험 | 같은 Cloud item임을 확인; 양쪽 증거 일치; 회수 후 원천 재열람·캐시 우회 없음 |
-| 제한 실사용 | 저위험 업무 1종으로 전체 작업·검토·인계·복귀 | 승인 범위 안에서 완료, 기존 업무 영향 없음, 복귀 검증 성공 |
+| CllC 존재·선정 KB | 09-19 로컬 직접 점검: 기존 root·KB manifest/release/LATEST hash 일치 | 기존 경로 사용. 새로 만들지 않음 |
+| KB 자동화 | 09-19 직접 점검: path·5분 timer active/enabled | 원천별 최신성 확인 |
+| CllC 원격 접근 | 09-10 인계: Owner/Editor·양쪽 Cloud 열람 PASS | 현재 ACL은 원격 재검증 필요 |
+| CnwC 현재 공유 | 09-19 사용자 설명: 새 임시 Viewer 공유 | 이번 작업에 원문 불필요하여 열람·복사하지 않음. 현재 ACL 미검증 |
+| 과거 개인 공유 회수 | 09-10 원본 위치 차단·CllC 이용·smoke 호출 PASS | 새 임시 공유와 구분. 로컬 잔존 전체 부재는 미검증 |
+| 공용 Skill receiver | 09-19 직접 점검: active/enabled | 실행 중 보호가 검증됐다는 뜻은 아님 |
+| Skill 원복 선택 | **FAIL** — 09-19 원본 revision `e9ecb710840a3bc24c8e`와 실제 active/선택 revision `3073d04058a677ebc5a2` 불일치. mtime 선택·기존 manifest 재사용 문제를 격리 합성 재현 | 명시적 승인 revision 선택으로 송신·수신 계약 수정 후 원복 시험 |
+| System Master 송신 자동 시작 | 09-10 마지막 인계: 재로그온 후 watcher 0·지속성 FAIL; 이번에 해당 PC 재확인 안 함 | 실제 Action/runtime·로그 준비부터 수정·재시험 |
+| 검토 후보 도구 | 09-19 로컬 적용: 별도 대기함과 ZIP/hash 생성기, 합성시험 6건 PASS | 실제 후보는 System Master 검토 후 처리 |
+| 전 멤버 배포 | 설계 확정 전: 멤버 계정·도구·OS·ACL 미확정 | 대상 명단과 실행 환경 확인 후 연결 |
+| 전체 | **부분 적용** | 아래 순서로 계속 진행 |
 
-공용 Skill 수용 시험은 새 Skill 작성·기존 Skill 수정·보조 파일만 수정한 경우마다 다음 요청의 실제 이름·revision·비민감 실행 결과를 확인한다. 전송 중 일부 파일 누락, 이름 충돌, 의존성 부족, 실행 중 업데이트, 오프라인·재연결, retired도 시험한다. 개인 CnwC 공유를 회수해도 공용 Skill은 동작하고 개인 원천 접근은 거부되어야 한다. 지연 측정은 저장→패키지 수신과 수신→로딩을 구분하며, 이 시험 전에는 자동 공유가 구현됐다고 보고하지 않는다.
+## 6. 남은 적용 순서
 
-파일명이나 상대경로가 같다는 것만으로 동일 Cloud 파일이라 판단하지 않는다. 실제 item 식별과 허용된 표본의 timestamp·size·가용성을 확인한다. online-only 파일이 로컬에서 읽힌다고 가정하지 않으며, 사전 점검 중 다운로드·pin을 임의로 시작하지 않는다. 필요한 영구 공유 표본만 좁게 준비하고 임시 개인 자료는 pin하지 않는다.
+1. **현재 공용 PC:** KB·기존 서비스 재사용, 후보 대기함·검증 도구 준비. 이 단계는 완료했다. 실제 승격은 하지 않았다.
+2. **System Master:** 멤버·도구·배포 Viewer 범위와 검토자를 확정하고 한 비민감 후보를 검토한다. 후보 hash와 승인을 연결하며 승인/배포 영역의 실제 ACL을 확인한다.
+3. **구현 PC:** 기존 송신·수신부에 명시적 승인 revision 선택·원복을 연결하고 격리 시험 후 안전한 변경 시점에 적용한다. 과거 임시 revision을 바로 삭제하거나 서비스 중지로 실행 보호를 추정하지 않는다.
+4. **System Master PC:** 진단 준비를 확인한 뒤 송신기 최소 수정·수동 시험 → 사용자의 실제 재로그온 → 단일 watcher 10분 지속·자동 패키징을 검증한다.
+5. **각 대상 PC:** 승인 후보 하나의 같은 revision/hash 수신·실제 호출·정상 원복을 확인한다. 미접속 멤버, 의존성 부족, 실행 중 보호는 별도 미완료로 남긴다.
 
-System Master PC는 문서 열람·Obsidian 탐색(사용 시)·OneDrive 상태, 공용 PC는 Gateway·Node·Telegram·Doc Dive의 관련 기능을 확인한다. 각 PC의 증거는 그 PC에서 수집한다. `PASS`는 해당 확인만 성공, `HOLD`는 필수 증거 부족, `ROLLBACK`은 유해 변경 복귀를 뜻한다. 한쪽 미검증이면 두 PC 연결 완료로 표시하지 않는다.
+[CoolFam 실제 적용 교훈](../CoolFam/coolfam-coolbot-personal-pc-continuity-runbook.md)을 유지한다: 준비가 실패한 채 동일 시험을 반복하지 않고, 실제 예약 환경을 수동 환경과 대조하며, 수동 성공과 자동 성공을 분리하고, 상대 PC 열람/호출까지 확인한다. CoolFam의 메일 보관 권한·경로·7회 관찰·백업 제외 결정은 TCEU에 이식하지 않는다.
 
-### 6.1 CoolFam 적용에서 차용한 교훈
-
-근거는 [CoolFam Runbook의 구현·복구·적용 기록(6~8장)](../CoolFam/coolfam-coolbot-personal-pc-continuity-runbook.md)과 [운영 중심 실행 안내](../CoolFam/coolfam-runbook-llm-usage-guide.md)다. 아래 TCEU 적용은 절차 개선이며 새로운 시험 PASS가 아니다.
-
-| CoolFam의 실제 근거 | TCEU에 적용할 방법 |
-|---|---|
-| 09-07 snapshot repository 초기화 누락으로 중단 후 기존 예약 복원 | 중단·재로그온 전에 필요한 도구, 로그 쓰기, 권한, 복귀 사본을 실제 검증한다. 준비 실패 상태로 같은 시험을 반복하지 않는다. |
-| 09-11~14 예약 실행에서 구형 Python/SQLite 선택으로 실패; 09-14 runtime 고정 후 수동 복구, 09-15 자동 실행 PASS | 마지막 성공 실행과 예약 작업의 실제 Action·실행 계정·작업 디렉터리·인터프리터·의존성·환경을 대조한다. 차이가 원인으로 확인되면 로컬 실행 정의에 정확한 경로를 고정한다. CoolFam의 원인을 TCEU의 종료 원인으로 단정하지 않는다. |
-| 운영 로그에 실제 계정 식별자가 노출되어 실패; 성공·오류·재시도 경로를 수정·재시험 | 합성 식별자로 로그의 비민감성을 먼저 확인한다. launcher 진입, wrapper 시작, 종료·예외와 PID·시각만 최소 기록하고 강제 종료 시 종료 행 누락 가능성을 남긴다. |
-| DB 잠금과 전체 build mutex를 구분하고, writer 전환과 종료를 별도 검증 | watcher/receiver 하나라는 사실과 일반 Agent 실행의 revision 보호를 구분한다. 모든 실행 경로와 전환 race가 통제됐다는 증거 없이 유휴 운영이나 Gateway 정지만으로 보호를 선언하지 않는다. |
-| 완성 generation 게시 후 상대 PC의 materialization·hash·열람·검색·freshness까지 확인 | 기존 KB release/manifest와 Skill revision/hash 계약을 재사용한다. Cloud 전송 순서를 가정하지 않고 수신 파일의 완전성을 확인한다. marker나 새 배포 프로토콜을 교훈 반영 명목으로 추가하지 않는다. |
-| 기존 공유 폴더·scheduler ID를 재사용하고 한 writer만 활성화; 실패 시 마지막 정상 generation 유지 | CllC 진입점과 기존 예약 작업·서비스를 유지한다. 생성 영역은 Agent가 쓰고 System Master 의견은 `notes/` 등에 둔다. 교체가 필요할 때만 기존 실행 종료·복귀를 확인해 중복 writer를 막는다. |
-| 첫 7회는 PASS 1·실패/HOLD 5·미확인 1의 관찰 기록이며, 수동 복구는 제외; 이후 자동 성공으로 현재 blocker 해소 | 관찰 회차와 연속 성공을 구분한다. TCEU는 재로그온 자동 실행·10분 지속·자동 패키징·상대 PC 호출을 연결해 인수하고, 임의의 7회 조건을 추가하지 않는다. 과거 실패와 수동 성공은 이력으로 남긴다. |
-| 완료된 이관 Prompt는 이력으로 전환; 정기 백업은 사용자 결정으로 범위 제외 | 완료·현재 blocker·별도 설계 과제를 구분하고 필요한 다음 PC의 Prompt만 제공한다. 다른 사례의 범위 제외 결정을 TCEU에 자동 적용하지 않는다. |
-
-CoolFam의 Google Drive·메일 상시 읽기/보관·첨부 정리 권한, macOS 경로, 예약 시각, 백업 제외 결정은 차용하지 않는다. TCEU의 임시 Viewer 원칙, 비민감 KB 범위, 공용 Skill 자동 전달 목적을 유지한다. 일반 execution lease는 요구사항에서 제거하거나 전체 완료를 위해 임의 면제하지 않는다.
-
-### 6.2 재개 순서와 인수
-
-1. **System Master — 준비:** 기존 인계와 실제 예약 작업을 대조하고 로그 활성화·로컬 쓰기·실제 launcher 경로를 확인한다. 현재 로그 활성화에는 관리자 권한이 필요한 것으로 기록됐다. 적용 여부를 확인하기 전 재로그온을 요구하지 않는다.
-2. **System Master — 최소 수정:** 증거에 근거한 변경과 복귀 방법을 확정하고 기존 권한 범위에서 적용한다. 실제 예약 작업 경로의 수동 시험으로 로그와 단일 watcher·패키징을 확인한다. 수동 성공은 자동 시작 인수가 아니다.
-3. **System Master — 자동 시험:** 준비 통과 후 사용자가 직접 재로그온한다. 자동 실행 근거, wrapper 진입, watcher 1개·동일 PID의 10분 지속, 지정 비민감 시험 파일의 자동 패키징과 원복을 기록한다. 프로세스가 바뀌면 재시작으로 따로 기록한다.
-4. **TCEU Manager — 수신 인수:** 새 시험 revision/hash와 기존 정상 복귀 revision/hash만 인계받아 패키지 수신·완전성·로딩·새 요청 호출을 확인한다. 일반 실행과 업데이트의 안전한 경계를 확보하지 못하면 전달/로딩 확인까지만 기록하고 동시 실행 시험은 보류한다. 3단계 성공으로 이 제한이 해소되지는 않는다.
-5. **System Master — 통합:** 두 PC의 증거를 동일 시험에 연결하고 자동 전달, 실행 중 보호, 잔존 자료 확인을 각각 판정한다. KB 공유 완료를 유지하며 모든 필수 조건을 충족하기 전 전체 통합 완료로 표시하지 않는다.
-
-각 인계는 `task / PC / 확인 시각·시간대 / 실행 종류(수동·자동) / revision·hash / 결과 / blocker / 복귀 상태 / 다음 PC·복사용 Prompt`로 충분하다. 기존 인계문서의 담당 절을 사용하고 동일 파일을 두 PC에서 동시에 편집하지 않는다. 원시 로그를 새 공유 파일로 누적하지 않는다. 새 관찰 주기가 필요하면 목적·종료 기준·담당자를 정하고, 이 문구만으로 자동 감시 작업을 생성하지 않는다.
-
-### 6.3 변경과 복귀
-
-설정·경로·runtime 변경 전 의존성을 active/reference/human-only/unknown으로 분류한다. active/reference 경로를 보존하고 unknown은 이동하지 않는다. 실제 문제를 해결하는 최소 변경만 적용하며 OneDrive·Node·보안·Lane·예약 실행을 한꺼번에 바꾸지 않는다.
-
-새 연결·실행범위 확대 전 Gateway 노출과 인증, 비밀 저장 방식, exec 허용범위, 사용자·task 격리를 확인한다. 위험한 미인증 노출을 해결하지 않은 채 연결을 확대하지 않는다. 기술 변경 시 현재 지원 방식과 실제 설정을 확인하고 변경 전 사본·책임자·변경시간·복귀 목표를 정한다. 정상 문서 편집에는 이 절차를 반복하지 않는다.
-
-권한 밖 접근, 민감정보 저장, 중복 writer, sync 충돌, 기존 업무 장애가 생기면 **관련 신규 작업·배포 중지 → 기존 업무 경로 유지 → 변경분 복귀 → 관련 기능 재확인** 순서로 처리한다. 원천과 정상 결과는 임의 삭제하지 않는다. 설정 복구와 OneDrive·Node·Telegram 회귀는 영향받은 범위에서 확인한다.
-
-queue·index 갱신처럼 운영 중 생기는 변화는 변경 작업의 영향, 설명 가능한 정상 변화, 원인 미상으로 구분한다. 정상 운영을 정지 상태로 만들기 위해 중단하지 않는다. 유해하거나 설명할 수 없는 중대한 변화만 관련 적용의 blocker로 남긴다.
-
-## 7. 현재 상태와 다음 행동
-
-2026-09-19 문서 검토에서 2026-09-10 통합 인계문서·시험 보고서·회수 후 보고서와 사용자 제공 결과를 대조했다. 아래는 해당 날짜의 인계 증거이며 현재 서비스 상태를 재측정한 결과가 아니다. 보고서의 과거 `remaining` 목록보다 해당 항목의 뒤이은 실제 시험 기록을 우선한다.
-
-| 항목 | 상태·근거 | 남은 확인 |
-|---|---|---|
-| CnwC 임시 공유 회수 | 직접 권한은 없었고 조직 edit/view 링크 회수 후 원본 위치 접근 차단 PASS(09-10 15:58 CEST). 확인한 추가 Cloud 경로도 미발견 | 모든 과거 접근 경로의 부재나 로컬 사본 삭제를 증명한 것은 아님 |
-| AgwA·CllC | 인계문서에서 실제 OpenClaw 로딩, Cloud 동일성, Owner/Editor와 편집·동기화 확인 | 아래 잔여 시험 외 전체 시스템 보안 감사로 일반화하지 않음 |
-| 공용 Skill 전달·호출 | 송신·수신·변경·복귀 및 실제 호출 PASS. 원천 회수 후 CllC 열람 16:12, smoke 새 요청 16:17:19 CEST PASS | 기존 revision 호출 성공이 이후 저장의 자동 전달이나 실행 중 보호를 보장하지 않음 |
-| System Master 자동 시작 지속성 | **FAIL** — 09-10 로그인 18:06:39, 작업 LastRunTime 18:06:42; 18:14 확인 시 Ready·watcher 0·`0xC000013A`. 이번 wrapper start 없음, 자동 패키징 미실행 | 로그 활성화와 실제 launcher 경로부터 진단. 종료 주체 미확정; 수동 재시작 후 10분 PASS와 분리 |
-| 진단 준비 | 17:02 lifecycle 코드·별도 self-test PASS. Operational 로그 활성화는 비승격 환경에서 권한 부족으로 미적용 | 코드 존재와 예약 경로에서 기록됨을 구분; 실제 로그 활성화·쓰기 확인 후 재로그온 |
-| 수신부 장애·복구 | 누락·hash 불일치·이름 충돌·의존성 부족·activation 실패 복귀·retired, 서비스 재시작·단일 receiver PASS | receiver 단위시험을 일반 실행 보호로 확대하지 않음 |
-| 일반 execution lease | **미검증** — 조사한 Codex harness hook으로 일반 실행 경계를 보장하지 못함. Gateway 대안 B도 local 실행 경로와 activation 전환 race 사전조건 실패; 구현 변경 없음 | 별도 지원 계약/설계 검토. core 개발만이 유일한 해법이라고 단정하지 않음 |
-| KB·작업 결과 공유 | **완료 — 선정한 비민감 운영 KB와 시험 artifact 범위**. 공용 PC 실제 호출·hash 및 System Master Cloud 열람 PASS | 다른 업무 KB로 확대할 때 원천별 보존·공유 적합성 확인 |
-| KB 자동 갱신 | 원천 감지 path unit와 5분 fallback timer가 active/enabled로 보고됨. 불변 release·artifact, 동일 hash 무재작성·사람 메모 보존 시험 PASS | 운영 중 오류·최신성 점검 |
-| 민감정보 미저장 | 이번 전달 대상에서 Wiki·Issue KB, 검색 DB·cache, 개인 workspace·memory·Skill 제외 | 기존 잔존 자료와 모든 세션·로그의 기술적 차단 완료를 뜻하지 않음 |
-| 로컬 잔존 사본·cache | **미검증** — 제한 이름 검사에서 미발견. 이전 HTTP cache 2건은 재확인 시 식별되지 않아 삭제하지 않음(16:18:14 CEST) | 전체 내용·미조사 앱 영역의 부재를 주장하지 않음; 필요한 조사 범위 별도 확정 |
-| 전체 통합 | **부분 검증**. KB 교환·회수 후 이용 확인 완료, 자동 시작 실패와 일반 실행 보호 미검증은 잔여 | 완료 범위를 확대하지 않고 아래 순서로 재개 |
-
-KB 작업 `TCEU-CLLC-KB-ARTIFACTS-20260910`은 완료다. 원천은 CllC 설치 자료의 비민감 `PROTOCOL.md`와 `README.md` 두 파일로 제한했고, KB는 `tceu-shared-skills-operations`다. System Master의 실제 Cloud 열람은 **2026-09-10 08:54:43 CEST**, Knowledge manifest/LATEST 및 Artifact manifest/Markdown 모두 PASS로 보고됐다. 해당 확인은 업무 Wiki·Issue KB 전체 공유 완료를 의미하지 않는다.
-
-Skill 작업 `TCEU-IMPLEMENT-20260910-01`은 6.2절과 [실행 안내서의 재개 Prompt](./tceu-runbook-llm-usage-guide.md#2-현재-설치에서-재개)로 진행한다. 즉시 실행할 항목은 System Master 자동 시작 진단·수정이다. TCEU Manager는 준비되지 않은 일반 lease 시험을 반복하지 않고 송신 시험 후 필요한 수신 증거를 이어 받는다. 원천 회수 시험은 이미 통과한 범위에서 반복하지 않는다.
-
-공용 PC에서 Gateway suspend만으로 모든 실행을 막거나 receiver 중지로 안전한 전환을 보장한다고 가정하지 않는다. 일반 실행 보호의 설계·지원 계약이 달라진 경우에만 관련 사전조건부터 다시 확인한다. 해당 기능 미완료를 KB 열람의 blocker로 확대하지 않지만, 전체 Skill 통합 완료의 근거로도 숨기지 않는다.
-
-송신 시험의 저장→manifest는 약 3.85~4.34초, manifest→READY 상태표는 12~57초로 기록됐다. 후자는 Cloud 전달·상태 반영을 포함하므로 5장의 “완전 수신 후 30초” 목표와 직접 비교하지 않는다. 실제 요청 처리시간도 배포 지연과 구분한다.
-
-8월 Stage 1 HOLD는 역사 기록이다. 이번에 확인된 Cloud·Skill·KB 항목만 갱신하며, 과거 Gateway 인증·격리·업무 회귀 등의 미확인 사항을 일괄 해결로 바꾸지 않는다. 상세 내부 근거와 hash는 CllC의 인계문서·시험 보고서에 유지하고 공개 Git에는 비민감 요약만 남긴다.
-
-매 작업에는 결과와 blocker만, 주간에는 실패·중복·동기화 충돌·업무 소요시간을, 월간에는 접근권한·보존·미사용 자동화·복구 가능성을 확인한다. 구현된 KB 5분 fallback 외 새 예약 작업을 이 문구만으로 생성하지 않는다.
-
-System Master는 실제 증거에 따라 상태·날짜·버전을 갱신한다. Git 최신 변경을 보존하고 운영 사본을 맞추며, 쓰기 실패를 완료로 보고하지 않는다. 반복 검증된 **Evidence → Insight → Policy**만 [공통 분석 리포트](https://github.com/coolwindjo/AX-Consulting-Agent-Framework/blob/main/01-Analysis/ax-consulting-agent-framework-report.md)와 [적용 Prompt Set](https://github.com/coolwindjo/AX-Consulting-Agent-Framework/blob/main/02-Implementation/ax-customer-llm-prompt-runbook.md)에 환류한다.
-
-## 8. 기존 문서에서 차용한 핵심
-
-| 기존 아이디어 | 현재 적용 |
-|---|---|
-| 공용 1+1·개인 3역할 | AgwA와 CllC 역할 분리, CnwC의 Version·Vault·Context 결합 유지 |
-| Direct Workspace·portable core | 정상 저장으로 인계, 기존 업무 폴더 유지, runtime은 장치 로컬 |
-| in-place 최적화·의존성 분류 | 전체 재구성 없이 필요한 결과 공유만 추가 |
-| Skill 3 Scope·System Master | CllC 공용 정본 직접 작성, 자동 검증·AgwA 배포, candidate·retired/복귀 책임 유지 |
-| identity·task·single writer | 최소 task 기록, 중복 실행·교차 문맥·덮어쓰기 방지 |
-| Stage baseline→shadow→canary | 현재 상태→비민감 시험→제한 실사용으로 압축 |
-| 두 PC checkpoint·Cloud 동일성·rollback | 실제 왕복 검증, 미검증 표시, 업무 연속성·복구 |
-| cache/index 수명주기 | 보관 허용 원천만 적용하고 최신성·만료·출처 표시 |
-| Specialist Lane·Grok 패턴 | 기존 역할 재사용, 권한 분리, 짧은 인계·반복 routine만 조건부 채택 |
-| 운영 점검·지식 환류 | 필요한 주기 점검, 검증된 비민감 교훈만 공통화 |
-
-만료된 변경창, 중복 프롬프트·경로표·대형 상태 YAML, 특정 제품 도입 제안과 고정 표본 개수는 현행 절차에서 제거했다. 개인정보 임시 공유 원칙과 충돌하는 상시 복제·materialization은 채택하지 않는다. 변경 전 상세 문서는 Git 이력으로 보존한다.
+변경 전 대상·사본·복귀 방법을 정한다. 실패 시 관련 신규 배포만 멈추고 정상 결과·기존 업무·개인 원본을 보존한다. 인계는 `task / PC / 실제 시각 / 변경 / revision·hash / 검증 / blocker / 복귀 상태 / 다음 PC·Prompt`만 남긴다. 공개 Git에는 비민감 요약만, 실제 위치와 상세 증거는 CllC의 제한된 운영 자료에 둔다.

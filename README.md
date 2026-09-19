@@ -43,11 +43,11 @@ TCEU 사례는 **CnwC 임시 열람 → AgwA 작업 → CllC 결과 공유**를 
 
 운영 기준은 Git의 [TCEU Runbook](./04-Field-Cases/TCEU/tceu-two-pc-agent-integration-runbook.md), 실행 방법은 [사용 안내서](./04-Field-Cases/TCEU/tceu-runbook-llm-usage-guide.md)에 유지합니다. CllC에는 검증된 열람 사본과 공유 가능한 업무 결과를 두며, 실제 계정·개인 공유 링크·기기 경로는 공개 Git에 기록하지 않습니다.
 
-공용 Skill은 System Master가 CnwC에서 연결된 CllC 정본을 편집하면 자동 검증·배포를 거쳐 AgwA의 다음 요청에서 사용하도록 설계했습니다. 수동 복사·매번 승인 없이 쓰는 방법과 연결 방법은 TCEU Runbook 5장, 실제 구현 상태는 7장에 있습니다.
+공용 Skill은 개인 작성 → 비민감 후보 제출 → System Master의 해당 revision 검토·승격 → 멤버별 자동 수신 순서로 운영합니다. 승인 후 같은 내용을 멤버마다 재승인하지 않습니다. 승격 계약은 TCEU Runbook 4장, 실제 상태와 남은 적용은 5~6장에 있습니다.
 
 기존 아이디어 중 개인 3역할의 같은-root 사용, portable core, Skill 3 Scope, single writer, 두 PC 검증·복귀, 전문 Agent의 권한 분리, 검증된 교훈 환류를 유지했습니다. 현재 상태 확인 → 비민감 시험 → 제한 실사용 순서로 필요한 기능만 검증하며, 문서 갱신을 시스템 적용 완료로 취급하지 않습니다.
 
-2026-09-19 TCEU 문서 개정은 CoolFam의 실제 적용 교훈을 반영했습니다. 실행 증거는 09-10 인계 기준으로, 선정된 비민감 KB·결과 공유와 개인 원천 회수 후 CllC·공용 Skill 이용은 통과했습니다. 재로그온 지속성은 실패, 일반 실행 lease와 로컬 잔존 자료 전체 부재는 미검증입니다. 기존 설치를 유지하며 진단 준비 → 수동 수정 검증 → 실제 재로그온 → 상대 PC 수신 인수 순서로 재개합니다.
+2026-09-19 TCEU 직접 점검에서 기존 KB hash·자동화와 receiver 실행을 확인했고, 검토 대기함·후보 준비 도구를 적용했습니다. Skill의 mtime 기반 원복 선택 오류를 발견·격리 재현했으며, 명시적 승인 revision 선택·멤버 ACL/loader 연결은 미완료입니다. System Master 송신기의 마지막 재로그온 시험 실패와 일반 execution lease·잔존 자료 미검증도 유지합니다. CoolFam의 준비·수동/자동 분리·양쪽 인수 교훈은 간결한 재개 절차에 반영했습니다.
 
 ## 기준본과 로컬 사본
 
